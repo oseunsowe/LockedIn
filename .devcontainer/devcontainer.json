@@ -1,0 +1,24 @@
+{
+  "name": "LockedIn (Expo)",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {}
+  },
+  "postCreateCommand": "cd app && npm install",
+  "forwardPorts": [8081, 19000, 19001, 19002],
+  "portsAttributes": {
+    "8081": { "label": "Metro Bundler", "onAutoForward": "notify" },
+    "19000": { "label": "Expo", "onAutoForward": "notify" },
+    "19001": { "label": "Expo", "onAutoForward": "silent" },
+    "19002": { "label": "Expo DevTools", "onAutoForward": "silent" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "msjsdiag.vscode-react-native"
+      ]
+    }
+  }
+}
