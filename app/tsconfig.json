@@ -1,6 +1,15 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    // Explicit because TS's automatic @types/* ambient inclusion doesn't reliably trigger
+    // under `moduleResolution: "bundler"` (set in expo/tsconfig.base) — confirmed empirically:
+    // `describe`/`it`/`expect` were unresolved until this was added, even though @types/jest
+    // was installed and present in node_modules/@types.
+    "types": ["jest"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   }
 }

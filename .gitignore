@@ -27,3 +27,6 @@ out/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Local scratch notes that sometimes hold credentials — never commit
+log.md

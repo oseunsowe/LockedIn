@@ -1,17 +1,30 @@
 {
   "expo": {
-    "name": "app",
-    "slug": "app",
+    "name": "LockedIn",
+    "slug": "lockedin",
+    "scheme": "lockedin",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#050508",
+    "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.lockedin.app",
+      "supportsTablet": true,
+      "backgroundColor": "#050508",
+      "usesAppleSignIn": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "LockedIn uses your camera to capture proof that you completed a mission.",
+        "NSMicrophoneUsageDescription": "LockedIn uses your microphone to record voice reflections as proof of mission completion.",
+        "NSPhotoLibraryUsageDescription": "LockedIn uses your photo library to find forgotten goals in your screenshots and turn them into missions, and to let you attach screenshots as proof."
+      }
     },
     "android": {
+      "package": "com.lockedin.app",
+      "backgroundColor": "#050508",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0F0F1E",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -19,7 +32,29 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "backgroundColor": "#050508"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-image",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#050508"
+        }
+      ],
+      "expo-secure-store",
+      "expo-status-bar",
+      "expo-sqlite",
+      "expo-apple-authentication"
+    ],
+    "experiments": {
+      "typedRoutes": true
     }
   }
 }
