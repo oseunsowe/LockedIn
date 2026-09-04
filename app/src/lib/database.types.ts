@@ -58,6 +58,10 @@ export type Database = {
           streak_count: number;
           execution_score: number;
           onboarding_completed_at: string | null;
+          // Added in 20260901000010_streaks.sql — see that migration's column comments.
+          timezone: string;
+          last_streak_date: string | null;
+          streak_grace_used_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -67,6 +71,7 @@ export type Database = {
           display_name: string | null;
           identity_class: IdentityClass | null;
           onboarding_completed_at: string | null;
+          timezone: string;
         }>;
         Relationships: [];
       };
@@ -199,6 +204,17 @@ export type Database = {
           updated_at: string;
         };
         // Written only by the RevenueCat webhook handler (service_role).
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      level_thresholds: {
+        Row: {
+          level: number;
+          cumulative_xp: number;
+        };
+        // Static reference data, seeded once by the migration — see
+        // 20260901000009_level_curve.sql and app/src/lib/leveling.ts.
         Insert: never;
         Update: never;
         Relationships: [];
