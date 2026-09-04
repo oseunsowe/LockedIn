@@ -16,6 +16,7 @@ import {
   Outfit_800ExtraBold,
   useFonts,
 } from '@expo-google-fonts/outfit';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, type ErrorBoundaryProps } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -30,6 +31,10 @@ import { semantic, space, type } from '@/theme';
 SplashScreen.preventAutoHideAsync().catch(() => {
   // Already hidden or unsupported on this platform — safe to ignore.
 });
+
+// Module-scope singleton, not per-render — a QueryClient created inside the component would be
+// torn down and its cache lost on every RootLayout re-render.
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
@@ -50,9 +55,11 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: semantic.bg.canvas }}>
       <SafeAreaProvider>
         <StatusBar style="light" />
-        <AuthProvider>
-          <AppGate fontsReady={fontsLoaded || !!fontError} />
-        </AuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <AppGate fontsReady={fontsLoaded || !!fontError} />
+          </AuthProvider>
+        </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

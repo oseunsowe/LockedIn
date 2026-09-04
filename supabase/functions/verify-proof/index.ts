@@ -267,6 +267,14 @@ Deno.serve(async (req) => {
       p_user_id: userId,
     });
     if (streakError) console.error('Failed to update streak:', streakError.message);
+
+    // TODO.md §9 P1: server-evaluated achievement rules — see
+    // evaluate_and_award_achievements() in 20260904000001_achievement_engine.sql. Same
+    // "shouldn't fail the whole verification response" reasoning as the streak update above.
+    const { error: achievementError } = await supabase.rpc('evaluate_and_award_achievements', {
+      p_user_id: userId,
+    });
+    if (achievementError) console.error('Failed to evaluate achievements:', achievementError.message);
   }
 
   return json(verdict, 200);

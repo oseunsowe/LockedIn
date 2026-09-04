@@ -11,14 +11,22 @@ import { semantic } from '@/theme';
  * `tabBarBackground` screenOptions API anymore, and `@react-navigation/bottom-tabs` isn't even
  * in the dependency tree. Verified against the shipped .d.ts files in
  * node_modules/expo-router/build/ui/*, not assumed from memory — see AGENTS.md.
+ *
+ * `<Tabs>` finds its screens by walking its children looking for `<TabList>` (recursing only
+ * through `Fragment`/`TabList` itself — see node_modules/expo-router/build/ui/Tabs.js
+ * `parseTriggersFromChildren`). A `<TabList>` nested inside any other wrapper component is
+ * invisible to that scan and the navigator throws "Couldn't find any screens." To style the tab
+ * bar with a custom background, `<TabList>` must stay the direct child of `<Tabs>` and delegate
+ * its own render to the wrapper via `asChild` (the same Slot pattern `TabTrigger`/`TabButton`
+ * use below) — so `TabBarBackground` goes *inside* `TabList`, not the other way around.
  */
 export default function AppTabsLayout() {
   return (
     <Tabs style={styles.root}>
       <OfflineBanner />
       <TabSlot />
-      <TabBarBackground>
-        <TabList style={styles.tabList}>
+      <TabList asChild style={styles.tabList}>
+        <TabBarBackground>
           <TabTrigger name="home" href="/" asChild>
             <TabButton icon="home" label="Home" />
           </TabTrigger>
@@ -34,8 +42,8 @@ export default function AppTabsLayout() {
           <TabTrigger name="profile" href="/profile" asChild>
             <TabButton icon="profile" label="Profile" />
           </TabTrigger>
-        </TabList>
-      </TabBarBackground>
+        </TabBarBackground>
+      </TabList>
     </Tabs>
   );
 }

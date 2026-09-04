@@ -98,6 +98,7 @@ export const iconRegistry = {
 
   // Chrome
   close: X,
+  edit: PenLine,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof iconRegistry;

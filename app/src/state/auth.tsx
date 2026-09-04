@@ -35,13 +35,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     setProfile(data);
+
+    // Keeps the streak day-boundary timezone-correct (TODO.md §9's "timezone-correct day
+    // boundary") without a dedicated settings screen — synced opportunistically on every profile
+    // load, skipping the round trip once it's already current, which is the common case.
+    let deviceTimezone = 'UTC';
+    try {
+      deviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch {
+      // Hermes without full ICU data, or an unexpected platform — fall back to UTC rather than
+      // let a timezone lookup failure break profile loading.
+    }
+    if (data.timezone !== deviceTimezone) {
+      const { error: tzError } = await supabase
+        .from('profiles')
+        .update({ timezone: deviceTimezone })
+        .eq('id', userId);
+      if (!tzError) {
+        setProfile((prev) => (prev ? { ...prev, timezone: deviceTimezone } : prev));
+      }
+    }
   }
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      if (data.session) void loadProfile(data.session.user.id);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        setSession(data.session);
+        if (data.session) void loadProfile(data.session.user.id);
+      })
+      .catch((err) => {
+        // No .catch() here previously meant a rejected getSession() (network hiccup, a storage
+        // read failure from the localStorage polyfill on first cold start, anything) left
+        // `session` stuck at its initial `undefined` forever — which the root layout's AppGate
+        // reads as "still resolving," so the splash screen never hides. Infinite hang, no error
+        // shown. Degrade to signed-out instead of hanging: the user can always try signing in
+        // again, which is a far better failure mode than staring at a stuck splash screen.
+        console.error('getSession() failed, treating as signed out:', err);
+        setSession(null);
+      });
 
     const {
       data: { subscription },
