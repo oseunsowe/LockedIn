@@ -1,6 +1,9 @@
+import Constants from 'expo-constants';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,23 +13,29 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useSeedDemoData } from '@/hooks/useSeedDemoData';
+import { useDeleteAccount } from '@/hooks/useDeleteAccount';
 import { useUpdateDisplayName } from '@/hooks/useUpdateDisplayName';
 import { useAuth } from '@/state/auth';
 import { Icon, radius, semantic, space, type } from '@/theme';
+
+// Hash-routed tabs on the same hosted legal doc (Privacy Policy default, Terms via #terms) — see
+// TODO.md §16's "Privacy policy + terms (hosted, linked in-app)."
+const LEGAL_URL = 'https://claude.ai/code/artifact/9c10254e-de96-4f53-9e13-30086553c71f';
 
 /**
  * Account/Profile (distinct from Progress Profile — TODO.md §11's "Progress" tab covers level/XP/
  * achievements/stats; this tab is account identity and settings). Subscription status (Phase 12)
  * and notification preferences (Phase 13) aren't built yet, so this stays intentionally small
  * rather than padding it out with "Coming soon" rows that don't do anything — what's here (display
- * name, sign out) is real.
+ * name, legal links, account deletion, sign out) is real. The "Seed Demo Missions" testing button
+ * that used to live here is gone for good — see `useSeedDemoData`'s own doc comment, which called
+ * for exactly this removal before shipping.
  */
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { session, profile, signOut, refreshProfile } = useAuth();
   const updateDisplayName = useUpdateDisplayName(session?.user.id);
-  const seedDemoData = useSeedDemoData(session?.user.id);
+  const deleteAccount = useDeleteAccount();
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
@@ -48,6 +57,21 @@ export default function ProfileScreen() {
     } catch {
       // updateDisplayName.isError renders inline below — nothing else to do here.
     }
+  }
+
+  function confirmDeleteAccount() {
+    Alert.alert(
+      'Delete Account?',
+      'This permanently deletes your account, missions, proof history, and XP. This can’t be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Account',
+          style: 'destructive',
+          onPress: () => deleteAccount.mutate(),
+        },
+      ],
+    );
   }
 
   return (
@@ -106,37 +130,55 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>TESTING</Text>
-        <Pressable
-          style={[styles.seedButton, seedDemoData.isPending ? styles.seedButtonDisabled : null]}
-          onPress={() => seedDemoData.mutate()}
-          disabled={seedDemoData.isPending}
-        >
-          {seedDemoData.isPending ? (
-            <ActivityIndicator color={semantic.text.onAccent} />
-          ) : (
-            <Text style={styles.seedLabel}>Seed Demo Missions</Text>
-          )}
-        </Pressable>
-        {seedDemoData.isSuccess ? (
-          <Text style={styles.seedStatus}>
-            {seedDemoData.data.inserted > 0
-              ? `Added ${seedDemoData.data.inserted} new demo mission${seedDemoData.data.inserted === 1 ? '' : 's'} — check Dashboard/Missions/Progress/Insights.`
-              : 'Already seeded — no new demo missions to add.'}
-          </Text>
-        ) : null}
-        {seedDemoData.isError ? (
-          <Text style={styles.seedStatusError}>Couldn&rsquo;t seed demo data. Try again.</Text>
-        ) : null}
-        <Text style={styles.seedNote}>
-          Inserts real rows into your Supabase project under your own account. Remove before
-          shipping.
-        </Text>
+        <Text style={styles.sectionLabel}>LEGAL</Text>
+        <View style={styles.linkList}>
+          <Pressable
+            style={styles.linkRow}
+            onPress={() => void Linking.openURL(`${LEGAL_URL}#privacy`)}
+          >
+            <Text style={styles.linkLabel}>Privacy Policy</Text>
+            <Icon name="link" size={16} color={semantic.text.tertiary} />
+          </Pressable>
+          <Pressable
+            style={styles.linkRow}
+            onPress={() => void Linking.openURL(`${LEGAL_URL}#terms`)}
+          >
+            <Text style={styles.linkLabel}>Terms of Service</Text>
+            <Icon name="link" size={16} color={semantic.text.tertiary} />
+          </Pressable>
+        </View>
       </View>
 
       <Pressable style={styles.signOutButton} onPress={() => void signOut()}>
         <Text style={styles.signOutLabel}>Sign Out</Text>
       </Pressable>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>DANGER ZONE</Text>
+        <Pressable
+          style={[
+            styles.deleteButton,
+            deleteAccount.isPending ? styles.deleteButtonDisabled : null,
+          ]}
+          onPress={confirmDeleteAccount}
+          disabled={deleteAccount.isPending}
+        >
+          {deleteAccount.isPending ? (
+            <ActivityIndicator color={semantic.state.danger} />
+          ) : (
+            <Text style={styles.deleteLabel}>Delete Account</Text>
+          )}
+        </Pressable>
+        {deleteAccount.isError ? (
+          <Text style={styles.deleteError}>Couldn&rsquo;t delete your account. Try again.</Text>
+        ) : null}
+        <Text style={styles.deleteNote}>
+          Permanently removes your account, missions, proof history, and XP. This can&rsquo;t be
+          undone.
+        </Text>
+      </View>
+
+      <Text style={styles.versionText}>LockedIn {Constants.expoConfig?.version ?? ''}</Text>
     </ScrollView>
   );
 }
@@ -232,37 +274,25 @@ const styles = StyleSheet.create({
     color: semantic.text.tertiary,
     alignSelf: 'flex-start',
   },
-  seedButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: space.md,
-    paddingHorizontal: space.xl,
-    borderRadius: radius.pill,
-    backgroundColor: semantic.action.primary,
+  linkList: {
     width: '100%',
+    gap: space.sm,
   },
-  seedButtonDisabled: {
-    opacity: 0.6,
+  linkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingVertical: space.md,
+    paddingHorizontal: space.lg,
+    borderRadius: radius.tile,
+    backgroundColor: semantic.bg.surface,
+    borderWidth: 1,
+    borderColor: semantic.border.subtle,
   },
-  seedLabel: {
+  linkLabel: {
     ...type.bodyMedium,
-    color: semantic.text.onAccent,
-  },
-  seedStatus: {
-    ...type.caption,
-    color: semantic.state.success,
-    textAlign: 'center',
-  },
-  seedStatusError: {
-    ...type.caption,
-    color: semantic.state.danger,
-    textAlign: 'center',
-  },
-  seedNote: {
-    ...type.caption,
-    fontSize: 11,
-    color: semantic.text.tertiary,
-    textAlign: 'center',
+    color: semantic.text.primary,
   },
   signOutButton: {
     paddingVertical: space.md,
@@ -275,5 +305,39 @@ const styles = StyleSheet.create({
   signOutLabel: {
     ...type.bodyMedium,
     color: semantic.state.danger,
+  },
+  deleteButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: space.md,
+    paddingHorizontal: space.xl,
+    borderRadius: radius.pill,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: semantic.state.danger,
+    width: '100%',
+  },
+  deleteButtonDisabled: {
+    opacity: 0.6,
+  },
+  deleteLabel: {
+    ...type.bodyMedium,
+    color: semantic.state.danger,
+  },
+  deleteError: {
+    ...type.caption,
+    color: semantic.state.danger,
+    textAlign: 'center',
+  },
+  deleteNote: {
+    ...type.caption,
+    fontSize: 11,
+    color: semantic.text.tertiary,
+    textAlign: 'center',
+  },
+  versionText: {
+    ...type.data,
+    fontSize: 11,
+    color: semantic.text.tertiary,
   },
 });

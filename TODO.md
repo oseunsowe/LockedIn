@@ -524,7 +524,8 @@ Per `LockedIn.md` Screen 6 + the §"Important Product Decision" in `docs/DESIGN-
 ---
 
 ## Phase 16 — Launch
-- [ ] **P0** Privacy policy + terms (hosted, linked in-app)
+- [x] **P0** Privacy policy + terms (hosted, linked in-app) — drafted to accurately reflect what the app actually does (Supabase auth/storage, proof photos sent to Anthropic for verification, no ads/analytics SDKs, in-app deletion), hosted, and linked from Profile → Legal. **Placeholder, not legal review**: uses the developer's own contact email and a jurisdiction-neutral liability clause since LockedIn has no registered legal entity yet — get an actual legal review before public launch, especially if targeting the EEA/UK (GDPR) or California (CCPA), neither of which this draft addresses specifically.
+- [x] **P0** **In-app account deletion** — not originally itemized here, but a real App Store Review blocker (Guideline 5.1.1(v): any app with account creation must support in-app deletion). `supabase/functions/delete-account`, called from Profile → Danger Zone with a destructive confirmation. Removes the user's proof media from Storage, then deletes the `auth.users` row — every other table cascades from that via existing FKs (verified by reading each migration's `references ... on delete cascade`, not assumed).
 - [ ] **P0** App Store privacy nutrition labels — photos, mic, camera, usage data. Must match actual behavior exactly.
 - [ ] **P0** **App Review prep.** High-risk areas: photo library access breadth (§10 privacy), AI-generated content disclosure, subscription terms clarity, demo account with seeded data. Write the reviewer notes carefully.
 - [ ] **P0** Screenshots + preview video *(the level-up moment is the hero shot)*
