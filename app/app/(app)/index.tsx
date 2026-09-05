@@ -17,7 +17,7 @@ import { XpBar } from '@/components/XpBar';
 import { useActiveMissions } from '@/hooks/useActiveMissions';
 import { pickMainQuest } from '@/lib/missions';
 import { useAuth } from '@/state/auth';
-import { Icon, palette, radius, semantic, space, type } from '@/theme';
+import { Icon, palette, radius, semantic, space, type, withAlpha } from '@/theme';
 
 function greeting(): string {
   const hour = new Date().getHours();
@@ -72,8 +72,18 @@ export default function Dashboard() {
           </View>
           <XpBar totalXp={profile.xp_total} />
         </View>
-        <View style={styles.avatar}>
-          <Icon name="profile" size={28} color={semantic.text.secondary} />
+        <View style={styles.headerActions}>
+          <Pressable
+            style={styles.scanButton}
+            onPress={() => router.push('/(modals)/screenshot-scan')}
+            accessibilityRole="button"
+            accessibilityLabel="Scan screenshots for hidden intentions"
+          >
+            <Icon name="ai" size={20} color={palette.electric} />
+          </Pressable>
+          <View style={styles.avatar}>
+            <Icon name="profile" size={28} color={semantic.text.secondary} />
+          </View>
         </View>
       </View>
 
@@ -86,7 +96,12 @@ export default function Dashboard() {
       ) : missionsQuery.isError ? (
         <View style={styles.errorCard}>
           <Text style={styles.errorText}>Couldn&rsquo;t load your missions.</Text>
-          <Pressable onPress={() => void missionsQuery.refetch()} style={styles.retryButton}>
+          <Pressable
+            onPress={() => void missionsQuery.refetch()}
+            style={styles.retryButton}
+            accessibilityRole="button"
+            accessibilityLabel="Try again"
+          >
             <Text style={styles.retryLabel}>Try again</Text>
           </Pressable>
         </View>
@@ -122,6 +137,8 @@ export default function Dashboard() {
           <Pressable
             style={styles.emptyCta}
             onPress={() => router.push('/(modals)/create-mission')}
+            accessibilityRole="button"
+            accessibilityLabel="Create mission"
           >
             <Text style={styles.emptyCtaLabel}>Create Mission</Text>
           </Pressable>
@@ -178,6 +195,19 @@ const styles = StyleSheet.create({
     textTransform: 'none',
     letterSpacing: 0,
     color: palette.gold,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+  },
+  scanButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: withAlpha(palette.electric, 0.14),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   avatar: {
     width: 48,

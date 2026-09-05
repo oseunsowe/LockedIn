@@ -63,7 +63,12 @@ export default function MissionBoard() {
         ) : missionsQuery.isError ? (
           <View style={styles.errorCard}>
             <Text style={styles.errorText}>Couldn&rsquo;t load your missions.</Text>
-            <Pressable onPress={() => void missionsQuery.refetch()} style={styles.retryButton}>
+            <Pressable
+              onPress={() => void missionsQuery.refetch()}
+              style={styles.retryButton}
+              accessibilityRole="button"
+              accessibilityLabel="Try again"
+            >
               <Text style={styles.retryLabel}>Try again</Text>
             </Pressable>
           </View>
@@ -129,6 +134,9 @@ export default function MissionBoard() {
                         style={styles.resumeButton}
                         onPress={() => resumeMission(mission.id)}
                         disabled={setMissionStatus.isPending}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Resume ${mission.title}`}
+                        accessibilityState={{ disabled: setMissionStatus.isPending }}
                       >
                         <Text style={styles.resumeButtonLabel}>Resume</Text>
                       </Pressable>
@@ -142,7 +150,11 @@ export default function MissionBoard() {
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + space.lg }]}>
-        <Pressable onPress={() => router.push('/(modals)/create-mission')}>
+        <Pressable
+          onPress={() => router.push('/(modals)/create-mission')}
+          accessibilityRole="button"
+          accessibilityLabel="Create new mission"
+        >
           <LinearGradient
             colors={gradients.xp}
             start={{ x: 0, y: 0 }}

@@ -102,6 +102,9 @@ export default function ProfileScreen() {
               style={styles.nameActionButton}
               onPress={() => void saveName()}
               disabled={updateDisplayName.isPending}
+              accessibilityRole="button"
+              accessibilityLabel="Save name"
+              accessibilityState={{ disabled: updateDisplayName.isPending }}
             >
               {updateDisplayName.isPending ? (
                 <ActivityIndicator color={semantic.text.onAccent} size="small" />
@@ -109,12 +112,23 @@ export default function ProfileScreen() {
                 <Text style={styles.nameActionLabel}>Save</Text>
               )}
             </Pressable>
-            <Pressable style={styles.nameCancelButton} onPress={() => setIsEditingName(false)}>
+            <Pressable
+              style={styles.nameCancelButton}
+              onPress={() => setIsEditingName(false)}
+              hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+              accessibilityRole="button"
+              accessibilityLabel="Cancel editing name"
+            >
               <Icon name="close" size={16} color={semantic.text.secondary} />
             </Pressable>
           </View>
         ) : (
-          <Pressable style={styles.nameRow} onPress={startEditingName}>
+          <Pressable
+            style={styles.nameRow}
+            onPress={startEditingName}
+            accessibilityRole="button"
+            accessibilityLabel="Edit name"
+          >
             <Text style={styles.name}>{displayName}</Text>
             <Icon name="edit" size={16} color={semantic.text.tertiary} />
           </Pressable>
@@ -135,6 +149,8 @@ export default function ProfileScreen() {
           <Pressable
             style={styles.linkRow}
             onPress={() => void Linking.openURL(`${LEGAL_URL}#privacy`)}
+            accessibilityRole="link"
+            accessibilityLabel="Open Privacy Policy"
           >
             <Text style={styles.linkLabel}>Privacy Policy</Text>
             <Icon name="link" size={16} color={semantic.text.tertiary} />
@@ -142,6 +158,8 @@ export default function ProfileScreen() {
           <Pressable
             style={styles.linkRow}
             onPress={() => void Linking.openURL(`${LEGAL_URL}#terms`)}
+            accessibilityRole="link"
+            accessibilityLabel="Open Terms of Service"
           >
             <Text style={styles.linkLabel}>Terms of Service</Text>
             <Icon name="link" size={16} color={semantic.text.tertiary} />
@@ -149,7 +167,12 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <Pressable style={styles.signOutButton} onPress={() => void signOut()}>
+      <Pressable
+        style={styles.signOutButton}
+        onPress={() => void signOut()}
+        accessibilityRole="button"
+        accessibilityLabel="Sign out"
+      >
         <Text style={styles.signOutLabel}>Sign Out</Text>
       </Pressable>
 
@@ -162,6 +185,9 @@ export default function ProfileScreen() {
           ]}
           onPress={confirmDeleteAccount}
           disabled={deleteAccount.isPending}
+          accessibilityRole="button"
+          accessibilityLabel="Delete account"
+          accessibilityState={{ disabled: deleteAccount.isPending }}
         >
           {deleteAccount.isPending ? (
             <ActivityIndicator color={semantic.state.danger} />

@@ -84,7 +84,12 @@ export default function ProgressProfile() {
         ) : statsQuery.isError ? (
           <View style={styles.errorCard}>
             <Text style={styles.errorText}>Couldn&rsquo;t load your stats.</Text>
-            <Pressable style={styles.retryButton} onPress={() => void statsQuery.refetch()}>
+            <Pressable
+              style={styles.retryButton}
+              onPress={() => void statsQuery.refetch()}
+              accessibilityRole="button"
+              accessibilityLabel="Try again"
+            >
               <Text style={styles.retryLabel}>Try again</Text>
             </Pressable>
           </View>

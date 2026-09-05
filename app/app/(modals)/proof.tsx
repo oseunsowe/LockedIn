@@ -137,6 +137,8 @@ export default function ProofModal() {
       <Pressable
         style={[styles.closeButton, { top: insets.top + space.sm }]}
         onPress={() => router.back()}
+        accessibilityRole="button"
+        accessibilityLabel="Close"
       >
         <Icon name="close" size={18} color={semantic.text.secondary} />
       </Pressable>
@@ -165,6 +167,13 @@ export default function ProofModal() {
                 ]}
                 disabled={option.disabled}
                 onPress={() => selectOption(option.type)}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  option.disabled
+                    ? `${option.label}, coming soon`
+                    : `${option.label}: ${option.description}`
+                }
+                accessibilityState={{ selected, disabled: option.disabled }}
               >
                 <View
                   style={[
@@ -220,6 +229,9 @@ export default function ProofModal() {
           style={[styles.cta, !canSubmit ? styles.ctaDisabled : null]}
           onPress={handleSubmit}
           disabled={!canSubmit}
+          accessibilityRole="button"
+          accessibilityLabel={asset ? 'Submit proof' : 'Choose a proof type above'}
+          accessibilityState={{ disabled: !canSubmit }}
         >
           {submitProof.isPending ? (
             <ActivityIndicator color={semantic.text.onAccent} />
@@ -243,9 +255,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: space.lg,
     zIndex: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: semantic.bg.surface,
     alignItems: 'center',
     justifyContent: 'center',

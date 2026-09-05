@@ -92,7 +92,12 @@ export default function ActiveMissionScreen() {
     return (
       <View style={[styles.container, styles.centered]}>
         <Text style={styles.errorText}>Couldn&rsquo;t load this mission.</Text>
-        <Pressable style={styles.retryButton} onPress={() => router.back()}>
+        <Pressable
+          style={styles.retryButton}
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
           <Text style={styles.retryLabel}>Go back</Text>
         </Pressable>
       </View>
@@ -110,6 +115,8 @@ export default function ActiveMissionScreen() {
       <Pressable
         style={[styles.closeButton, { top: insets.top + space.sm }]}
         onPress={() => router.back()}
+        accessibilityRole="button"
+        accessibilityLabel="Close"
       >
         <Icon name="close" size={18} color={semantic.text.secondary} />
       </Pressable>
@@ -155,6 +162,9 @@ export default function ActiveMissionScreen() {
               style={styles.recoveryButton}
               onPress={() => void handleActivateRecovery()}
               disabled={setMissionStatus.isPending}
+              accessibilityRole="button"
+              accessibilityLabel="Activate Recovery Mode"
+              accessibilityState={{ disabled: setMissionStatus.isPending }}
             >
               <Text style={styles.recoveryButtonLabel}>
                 {setMissionStatus.isPending ? 'Activating…' : 'Activate Recovery Mode'}
@@ -200,6 +210,9 @@ export default function ActiveMissionScreen() {
           <Pressable
             style={[styles.controlButton, focusActive ? styles.controlButtonFocusActive : null]}
             onPress={() => void toggleFocusMode()}
+            accessibilityRole="button"
+            accessibilityLabel="Focus Mode"
+            accessibilityState={{ selected: focusActive }}
           >
             <Icon
               name="locked"
@@ -216,6 +229,8 @@ export default function ActiveMissionScreen() {
           onPress={() =>
             router.push({ pathname: '/(modals)/proof', params: { missionId: mission.id } })
           }
+          accessibilityRole="button"
+          accessibilityLabel="Submit proof"
         >
           <Text style={styles.submitLabel}>Submit Proof</Text>
         </Pressable>
@@ -255,9 +270,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: space.lg,
     zIndex: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: semantic.bg.surface,
     alignItems: 'center',
     justifyContent: 'center',

@@ -34,6 +34,7 @@ export type MissionDifficulty = 'standard' | 'challenging' | 'hard' | 'epic';
 export type ProofType = 'photo' | 'voice' | 'screenshot' | 'file';
 export type SubscriptionTier = 'free' | 'pro' | 'elite';
 export type SubscriptionStatus = 'active' | 'trialing' | 'canceled' | 'expired';
+export type IntentionStatus = 'pending' | 'converted' | 'ignored';
 
 export type IdentityClass =
   | 'developer'
@@ -217,6 +218,23 @@ export type Database = {
         // 20260901000009_level_curve.sql and app/src/lib/leveling.ts.
         Insert: never;
         Update: never;
+        Relationships: [];
+      };
+      extracted_intentions: {
+        Row: {
+          id: string;
+          user_id: string;
+          intention: string;
+          category: CampaignKey;
+          confidence: number;
+          status: IntentionStatus;
+          created_at: string;
+        };
+        // Written only by the scan-screenshots Edge Function (service_role) — see
+        // 20260905000001_screenshot_intelligence.sql.
+        Insert: never;
+        // The client may only flip its own row's status (Turn into Mission / Ignore).
+        Update: Partial<{ status: IntentionStatus }>;
         Relationships: [];
       };
     };

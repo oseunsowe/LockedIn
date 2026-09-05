@@ -137,6 +137,8 @@ export default function CreateMissionModal() {
       <Pressable
         style={[styles.closeButton, { top: insets.top + space.sm }]}
         onPress={() => router.back()}
+        accessibilityRole="button"
+        accessibilityLabel="Close"
       >
         <Icon name="close" size={18} color={semantic.text.secondary} />
       </Pressable>
@@ -191,6 +193,9 @@ export default function CreateMissionModal() {
                   key={key}
                   style={[styles.chip, selected ? styles.chipSelected : null]}
                   onPress={() => setMissionType(key)}
+                  accessibilityRole="button"
+                  accessibilityLabel={meta.label}
+                  accessibilityState={{ selected }}
                 >
                   <Icon
                     name={meta.icon}
@@ -212,6 +217,9 @@ export default function CreateMissionModal() {
             <Pressable
               style={[styles.chip, campaignKey === null ? styles.chipSelected : null]}
               onPress={() => setCampaignKey(null)}
+              accessibilityRole="button"
+              accessibilityLabel="No goal"
+              accessibilityState={{ selected: campaignKey === null }}
             >
               <Text
                 style={[styles.chipLabel, campaignKey === null ? styles.chipLabelSelected : null]}
@@ -235,6 +243,9 @@ export default function CreateMissionModal() {
                       : null,
                   ]}
                   onPress={() => setCampaignKey(key)}
+                  accessibilityRole="button"
+                  accessibilityLabel={campaign.label}
+                  accessibilityState={{ selected }}
                 >
                   <IconTile name={campaign.icon} accent={campaign.accent} size={28} iconSize={14} />
                   <Text style={styles.chipLabel}>{campaign.label}</Text>
@@ -260,6 +271,9 @@ export default function CreateMissionModal() {
                       : null,
                   ]}
                   onPress={() => setDifficulty(key)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${meta.label} difficulty`}
+                  accessibilityState={{ selected }}
                 >
                   <DifficultyMeter difficulty={key} />
                   <Text style={[styles.chipLabel, selected ? { color: meta.color } : null]}>
@@ -281,6 +295,9 @@ export default function CreateMissionModal() {
                   key={option.key}
                   style={[styles.chip, selected ? styles.chipSelected : null]}
                   onPress={() => setDeadlineKey(option.key)}
+                  accessibilityRole="button"
+                  accessibilityLabel={option.label}
+                  accessibilityState={{ selected }}
                 >
                   <Text style={[styles.chipLabel, selected ? styles.chipLabelSelected : null]}>
                     {option.label}
@@ -301,6 +318,9 @@ export default function CreateMissionModal() {
                   key={proofType}
                   style={[styles.chip, selected ? styles.chipSelected : null]}
                   onPress={() => toggleProofType(proofType)}
+                  accessibilityRole="button"
+                  accessibilityLabel={proofTypeLabel[proofType]}
+                  accessibilityState={{ selected }}
                 >
                   <Icon
                     name={proofTypeIcon[proofType]}
@@ -322,6 +342,9 @@ export default function CreateMissionModal() {
             <Pressable
               style={styles.stepperButton}
               onPress={() => setCustomXp(Math.max(XP_MIN, xpReward - XP_STEP))}
+              hitSlop={{ top: 2, bottom: 2, left: 2, right: 2 }}
+              accessibilityRole="button"
+              accessibilityLabel="Decrease XP reward"
             >
               <Text style={styles.stepperButtonLabel}>−</Text>
             </Pressable>
@@ -329,6 +352,9 @@ export default function CreateMissionModal() {
             <Pressable
               style={styles.stepperButton}
               onPress={() => setCustomXp(Math.min(XP_MAX, xpReward + XP_STEP))}
+              hitSlop={{ top: 2, bottom: 2, left: 2, right: 2 }}
+              accessibilityRole="button"
+              accessibilityLabel="Increase XP reward"
             >
               <Text style={styles.stepperButtonLabel}>+</Text>
             </Pressable>
@@ -341,7 +367,19 @@ export default function CreateMissionModal() {
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + space.lg }]}>
-        <Pressable onPress={handleSubmit} disabled={!canSubmit}>
+        <Pressable
+          onPress={handleSubmit}
+          disabled={!canSubmit}
+          accessibilityRole="button"
+          accessibilityLabel={
+            canSubmit
+              ? createMission.isPending
+                ? 'Locking in mission'
+                : 'Lock in mission'
+              : 'Name your mission to continue'
+          }
+          accessibilityState={{ disabled: !canSubmit }}
+        >
           {canSubmit ? (
             <LinearGradient
               colors={gradients.xp}
@@ -373,9 +411,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: space.lg,
     zIndex: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: semantic.bg.surface,
     alignItems: 'center',
     justifyContent: 'center',

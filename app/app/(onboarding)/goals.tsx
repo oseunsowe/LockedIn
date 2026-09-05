@@ -44,6 +44,9 @@ export default function Goals() {
                   : null,
               ]}
               onPress={() => toggleCampaign(key)}
+              accessibilityRole="button"
+              accessibilityLabel={`${campaign.label} goal`}
+              accessibilityState={{ selected: isSelected }}
             >
               <IconTile name={campaign.icon} accent={campaign.accent} size={44} />
               <View style={styles.rowBody}>

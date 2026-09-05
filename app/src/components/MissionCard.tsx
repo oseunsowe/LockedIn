@@ -31,7 +31,12 @@ export function MissionCard({ mission, onPress }: MissionCardProps) {
   const proofChips = parseProofRequirements(mission.proof_requirements);
 
   return (
-    <Pressable style={styles.card} onPress={onPress}>
+    <Pressable
+      style={styles.card}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`Open mission: ${mission.title}`}
+    >
       <View style={styles.topRow}>
         <View style={styles.kickerRow}>
           <Icon name={meta.icon} size={14} color={semantic.text.tertiary} />

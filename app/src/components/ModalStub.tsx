@@ -16,7 +16,12 @@ export function ModalStub({ icon, title, phase, description }: ModalStubProps) {
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.container, { paddingTop: insets.top + space.lg }]}>
-      <Pressable style={styles.closeButton} onPress={() => router.back()}>
+      <Pressable
+        style={styles.closeButton}
+        onPress={() => router.back()}
+        accessibilityRole="button"
+        accessibilityLabel="Close"
+      >
         <Icon name="close" size={18} color={semantic.text.secondary} />
       </Pressable>
       <View style={styles.iconWrap}>
@@ -40,9 +45,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: space.lg,
     right: space.lg,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: semantic.bg.surface,
     alignItems: 'center',
     justifyContent: 'center',

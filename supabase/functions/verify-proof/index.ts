@@ -122,7 +122,9 @@ Deno.serve(async (req) => {
 
   const { data: proof, error: proofError } = await supabase
     .from('proofs')
-    .select('id, user_id, type, storage_path, mission_id, missions(id, title, type, difficulty, xp_reward)')
+    .select(
+      'id, user_id, type, storage_path, mission_id, missions(id, title, type, difficulty, xp_reward, status)',
+    )
     .eq('id', body.proofId)
     .single();
 
@@ -135,6 +137,21 @@ Deno.serve(async (req) => {
   const mission = Array.isArray(proof.missions) ? proof.missions[0] : proof.missions;
   if (!mission) {
     return json({ error: 'Mission not found for this proof' }, 404);
+  }
+
+  // Security: a mission that isn't `active` anymore has already reached an outcome — most often
+  // `completed` via this exact function, on this or another proof for the same mission. Without
+  // this guard, simply replaying the same `{ proofId }` request re-runs the Claude call and, on a
+  // second `verified: true`, re-inserts an `xp_events` row and re-fires the streak/achievement
+  // RPCs — unlimited XP for a mission already paid out, bounded only by the daily quota below.
+  // `recovery` missions are excluded from replay too: reactivating one for a real second attempt
+  // goes through `useSetMissionStatus` back to `active` first (see that hook's own race-condition
+  // guard), which is the only path back into eligibility.
+  if (mission.status !== 'active') {
+    return json(
+      { error: 'This mission has already reached an outcome and cannot be re-verified.' },
+      409,
+    );
   }
 
   if (!IMAGE_PROOF_TYPES.has(proof.type as string)) {

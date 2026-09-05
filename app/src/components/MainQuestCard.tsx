@@ -19,7 +19,12 @@ export function MainQuestCard({ mission, onPress }: MainQuestCardProps) {
   const proofChips = parseProofRequirements(mission.proof_requirements);
 
   return (
-    <Pressable onPress={onPress} style={[styles.card, glow(palette.electric, { opacity: 0.3 })]}>
+    <Pressable
+      onPress={onPress}
+      style={[styles.card, glow(palette.electric, { opacity: 0.3 })]}
+      accessibilityRole="button"
+      accessibilityLabel={`Main quest: ${mission.title}`}
+    >
       <LinearGradient
         colors={[withAlpha(gradients.xp[0], 0.16), withAlpha(gradients.xp[1], 0.05)]}
         start={{ x: 0, y: 0 }}

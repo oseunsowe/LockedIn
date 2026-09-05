@@ -43,6 +43,9 @@ export default function Identity() {
               key={c.key}
               style={[styles.card, isSelected ? styles.cardSelected : null]}
               onPress={() => setIdentityClass(c.key)}
+              accessibilityRole="button"
+              accessibilityLabel={`${c.label}, ${c.classLabel}`}
+              accessibilityState={{ selected: isSelected }}
             >
               <View style={styles.iconTile}>
                 <Icon

@@ -52,7 +52,13 @@ export function OnboardingStep({
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + space.lg }]}>
-        <Pressable onPress={onCta} disabled={ctaDisabled}>
+        <Pressable
+          onPress={onCta}
+          disabled={ctaDisabled}
+          accessibilityRole="button"
+          accessibilityLabel={ctaLabel}
+          accessibilityState={{ disabled: !!ctaDisabled }}
+        >
           {ctaDisabled ? (
             <View style={[styles.cta, styles.ctaDisabled]}>
               <Text style={styles.ctaLabelDisabled}>{ctaLabel}</Text>

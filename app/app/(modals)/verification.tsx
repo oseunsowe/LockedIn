@@ -93,10 +93,19 @@ export default function VerificationModal() {
           The verification service didn&rsquo;t respond. Your proof was saved — try again in a
           moment.
         </Text>
-        <Pressable style={styles.primaryButton} onPress={() => proofId && verify.mutate(proofId)}>
+        <Pressable
+          style={styles.primaryButton}
+          onPress={() => proofId && verify.mutate(proofId)}
+          accessibilityRole="button"
+          accessibilityLabel="Try again"
+        >
           <Text style={styles.primaryButtonLabel}>Try Again</Text>
         </Pressable>
-        <Pressable onPress={() => router.back()}>
+        <Pressable
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+        >
           <Text style={styles.dismissLabel}>Close</Text>
         </Pressable>
       </View>
@@ -123,7 +132,12 @@ export default function VerificationModal() {
             <Text style={styles.xpText}>+{verdict.suggestedXp} XP</Text>
           </View>
         </Animated.View>
-        <Pressable style={styles.primaryButton} onPress={handleContinue}>
+        <Pressable
+          style={styles.primaryButton}
+          onPress={handleContinue}
+          accessibilityRole="button"
+          accessibilityLabel="Continue"
+        >
           <Text style={styles.primaryButtonLabel}>Continue</Text>
         </Pressable>
       </View>
@@ -142,10 +156,19 @@ export default function VerificationModal() {
       <Text style={styles.reasoning}>
         {verdict?.reasoning ?? 'We couldn’t confirm this one — no worries, try resubmitting.'}
       </Text>
-      <Pressable style={styles.primaryButton} onPress={handleResubmit}>
+      <Pressable
+        style={styles.primaryButton}
+        onPress={handleResubmit}
+        accessibilityRole="button"
+        accessibilityLabel="Resubmit proof"
+      >
         <Text style={styles.primaryButtonLabel}>Resubmit Proof</Text>
       </Pressable>
-      <Pressable onPress={() => router.back()}>
+      <Pressable
+        onPress={() => router.back()}
+        accessibilityRole="button"
+        accessibilityLabel="Maybe later"
+      >
         <Text style={styles.dismissLabel}>Maybe Later</Text>
       </Pressable>
     </View>

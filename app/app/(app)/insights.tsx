@@ -106,7 +106,12 @@ export default function InsightsScreen() {
       ) : isError ? (
         <View style={styles.errorCard}>
           <Text style={styles.errorText}>Couldn&rsquo;t load your insights.</Text>
-          <Pressable style={styles.retryButton} onPress={refetchAll}>
+          <Pressable
+            style={styles.retryButton}
+            onPress={refetchAll}
+            accessibilityRole="button"
+            accessibilityLabel="Try again"
+          >
             <Text style={styles.retryLabel}>Try again</Text>
           </Pressable>
         </View>

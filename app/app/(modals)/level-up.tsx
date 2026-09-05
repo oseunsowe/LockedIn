@@ -66,7 +66,12 @@ export default function LevelUpModal() {
           </Animated.Text>
         </Animated.View>
 
-        <Pressable style={styles.continueButton} onPress={() => router.dismissAll()}>
+        <Pressable
+          style={styles.continueButton}
+          onPress={() => router.dismissAll()}
+          accessibilityRole="button"
+          accessibilityLabel="Keep going"
+        >
           <Text style={styles.continueLabel}>Keep Going</Text>
         </Pressable>
       </View>

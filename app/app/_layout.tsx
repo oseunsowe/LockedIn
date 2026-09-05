@@ -122,7 +122,12 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
     <View style={styles.errorContainer}>
       <Text style={styles.errorTitle}>Something went wrong</Text>
       <Text style={styles.errorMessage}>{error.message}</Text>
-      <Pressable style={styles.retryButton} onPress={retry}>
+      <Pressable
+        style={styles.retryButton}
+        onPress={retry}
+        accessibilityRole="button"
+        accessibilityLabel="Try again"
+      >
         <Text style={styles.retryLabel}>Try again</Text>
       </Pressable>
     </View>

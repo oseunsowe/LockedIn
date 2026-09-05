@@ -7,8 +7,16 @@
 export const palette = {
   void: '#050508',
   obsidian: '#0F0F1E',
-  electric: '#6366F1',
-  violet: '#8B5CF6',
+  // #6366F1 in the brand board puts white button text (`semantic.text.onAccent`) at ~4.466:1
+  // against it — just under WCAG AA's 4.5:1 for normal text (see
+  // src/theme/__tests__/semanticContrast.test.ts). Nudged the green channel by a single unit
+  // (102 -> 101), imperceptible next to the source asset, to clear 4.5:1 everywhere this sits
+  // behind white text (primary CTAs across onboarding, mission, and proof screens).
+  electric: '#6365F1',
+  // #8B5CF6 puts white button text (Resume/Activate Recovery Mode labels) at ~4.234:1 against
+  // it — below WCAG AA's 4.5:1. Nudged the green channel down (92 -> 82) to clear 4.5:1; still
+  // reads as the same violet.
+  violet: '#8B52F6',
   iris: '#A78BFA',
   gold: '#D4AF37',
   pure: '#FFFFFF',
@@ -35,7 +43,11 @@ export const semantic = {
   text: {
     primary: palette.pure,
     secondary: 'rgba(255,255,255,0.64)',
-    tertiary: 'rgba(255,255,255,0.40)',
+    // 0.40 measured ~3.72:1 against bg.canvas and ~3.81:1 against bg.surface — both short of
+    // WCAG AA's 4.5:1 for normal text (see src/theme/__tests__/semanticContrast.test.ts). Bumped
+    // to 0.46, the smallest alpha step that clears 4.5:1 against the darkest real background
+    // (bg.canvas) this token is used on for captions/meta text throughout the app.
+    tertiary: 'rgba(255,255,255,0.46)',
     onAccent: palette.pure,
   },
   action: {

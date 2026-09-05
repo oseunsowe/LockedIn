@@ -31,7 +31,11 @@ export default function Welcome() {
       </View>
 
       <View style={styles.actions}>
-        <Pressable onPress={() => router.push('/(onboarding)/identity')}>
+        <Pressable
+          onPress={() => router.push('/(onboarding)/identity')}
+          accessibilityRole="button"
+          accessibilityLabel="Start My Journey"
+        >
           <LinearGradient
             colors={gradients.xp}
             start={{ x: 0, y: 0 }}
@@ -43,11 +47,23 @@ export default function Welcome() {
         </Pressable>
 
         <View style={styles.secondaryRow}>
-          <Pressable style={styles.secondaryCta} disabled>
+          <Pressable
+            style={styles.secondaryCta}
+            disabled
+            accessibilityRole="button"
+            accessibilityLabel="Import Screenshots"
+            accessibilityState={{ disabled: true }}
+          >
             <Icon name="screenshot" size={16} color={semantic.text.tertiary} />
             <Text style={styles.secondaryCtaLabel}>Import Screenshots</Text>
           </Pressable>
-          <Pressable style={styles.secondaryCta} disabled>
+          <Pressable
+            style={styles.secondaryCta}
+            disabled
+            accessibilityRole="button"
+            accessibilityLabel="Speak My Goals"
+            accessibilityState={{ disabled: true }}
+          >
             <Icon name="voice" size={16} color={semantic.text.tertiary} />
             <Text style={styles.secondaryCtaLabel}>Speak My Goals</Text>
           </Pressable>

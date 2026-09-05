@@ -140,13 +140,24 @@ export default function Auth() {
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <Pressable style={styles.submitButton} onPress={handleEmailSubmit} disabled={submitting}>
+        <Pressable
+          style={styles.submitButton}
+          onPress={handleEmailSubmit}
+          disabled={submitting}
+          accessibilityRole="button"
+          accessibilityLabel={mode === 'signUp' ? 'Create account' : 'Sign in'}
+          accessibilityState={{ disabled: submitting }}
+        >
           <Text style={styles.submitLabel}>
             {submitting ? 'Please wait…' : mode === 'signUp' ? 'Create Account' : 'Sign In'}
           </Text>
         </Pressable>
 
-        <Pressable onPress={() => setMode(mode === 'signUp' ? 'signIn' : 'signUp')}>
+        <Pressable
+          onPress={() => setMode(mode === 'signUp' ? 'signIn' : 'signUp')}
+          accessibilityRole="button"
+          accessibilityLabel={mode === 'signUp' ? 'Switch to sign in' : 'Switch to sign up'}
+        >
           <Text style={styles.switchModeLabel}>
             {mode === 'signUp'
               ? 'Already have an account? Sign in'

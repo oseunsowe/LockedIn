@@ -18,7 +18,12 @@ type MissionRowProps = {
 /** A compact, clearly-subordinate row for non-hero missions (TODO.md §6). */
 export function MissionRow({ mission, onPress }: MissionRowProps) {
   return (
-    <Pressable style={styles.row} onPress={onPress}>
+    <Pressable
+      style={styles.row}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`Open mission: ${mission.title}`}
+    >
       <View style={styles.iconWrap}>
         <Icon name={typeIcon[mission.type]} size={18} color={semantic.text.secondary} />
       </View>
