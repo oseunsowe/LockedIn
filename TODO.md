@@ -475,14 +475,30 @@ Per `LockedIn.md` Screen 6 + the §"Important Product Decision" in `docs/DESIGN-
 ## Phase 12 — Monetization
 *Gate: sandbox purchase → entitlement unlocks → restore works.*
 
-- [ ] **P0** RevenueCat (`react-native-purchases`) — do not hand-roll StoreKit
-- [ ] **P0** App Store Connect products: Free / Pro / Elite, monthly + annual
-- [ ] **P0** Paywall — `LockedIn.md` Screen 15. **Not a SaaS pricing table**; a level-unlock screen. "Unlock your next level."
-- [ ] **P0** Gate list: AI verification volume, Screenshot Intelligence, Focus Mode, advanced missions, XP bonuses
-- [ ] **P0** **Server-side entitlement checks.** Never trust a client boolean for a paid AI call — that's your API bill.
-- [ ] **P0** Restore purchases (Apple rejects without it); privacy policy + terms links on the paywall (also required)
-- [ ] **P1** Free-tier limits generous enough to reach one verified mission — the aha moment must be free
-- [ ] **P1** Trial + intro pricing
+- [ ] **P0** RevenueCat (`react-native-purchases`) — do not hand-roll StoreKit. **Not installed.** It's a native module with no Expo Go support at all — importing it anywhere in the bundled app would crash every Expo Go session currently used for testing everything else this project has built. Genuinely blocked on the dev-client decision (§0.5), not just deferred out of caution.
+- [ ] **P0** App Store Connect products: Free / Pro / Elite, monthly + annual — blocked on Apple Developer Program enrollment (§0.5), same as the app-blocking feature.
+- [x] **P0** Paywall — `LockedIn.md` Screen 15. **Not a SaaS pricing table**; a level-unlock screen. "Unlock your next level." — `app/(modals)/paywall.tsx`, real UI, no fabricated prices anywhere (App Store Connect products don't exist yet to price against). Shows the two gates that are actually real (below), the user's actual current tier, and a visibly-disabled "SOON" Subscribe button — same honest-stub pattern as Template mission creation.
+- [~] **P0** Gate list: AI verification volume, Screenshot Intelligence, Focus Mode, advanced missions, XP bonuses — **two of five are real, the other three don't exist as features yet.** AI-verification and Screenshot-Intelligence volume are genuinely tier-gated server-side (see the entitlement checks below) and shown honestly on the Paywall. Focus Mode/advanced missions/XP bonuses are deliberately **not** listed on the Paywall — Focus Mode has no persistence to gate (§7.3), and the other two don't exist anywhere in the schema or code; advertising a benefit that doesn't exist would be a customer-facing lie, not a stub.
+- [x] **P0** **Server-side entitlement checks.** Never trust a client boolean for a paid AI call — that's your API bill. — real: `supabase/functions/_shared/entitlements.ts`'s `getSubscriptionTier()` reads the user's real `subscriptions.tier` (service_role, written only by a future RevenueCat webhook — never the client) and both `verify-proof` and `scan-screenshots` now apply **tier-aware** daily limits instead of one flat number for everyone (free/pro/elite: 5/20/50 verifications per day, 15/60/150 screenshot scans per day — placeholder figures, a real pricing/limits decision nobody has made yet, but the mechanism enforcing whatever numbers get chosen is real and live). Every profile already gets a `tier: 'free'` `subscriptions` row automatically (`20260901000006_subscriptions.sql`'s trigger), so this works today with zero payment integration — flip a user's `tier` by hand in the database and their limits change immediately, no app update, no client trust involved.
+- [ ] **P0** Restore purchases (Apple rejects without it); privacy policy + terms links on the paywall (also required) — restore purchases blocked on RevenueCat SDK above. Legal links are real and live, just not on this specific screen — they're on Profile → Legal (linking to the same hosted Privacy Policy/Terms this screen would need).
+- [x] **P1** Free-tier limits generous enough to reach one verified mission — the aha moment must be free — free tier gets 5 AI verifications/day, comfortably more than the one mission needed for the "aha moment."
+- [ ] **P1** Trial + intro pricing — blocked on the same App Store Connect products as everything else pricing-related.
+
+### 12.1 Competitive signal (2026-09-05) — verification is becoming multi-modal, not photo-first
+
+Two real competitors ship automatic/passive verification instead of (or alongside) photo proof:
+- **Tonic: Earn Screen Time** (App Store v1.0.9, 2026-08-02) — verifies productive behavior automatically from HealthKit/Apple Watch (steps, workouts, sleep, sunlight, meditation) and time spent in chosen productive apps; restricted apps unlock automatically once the behavior is detected, with escalating pauses/cooldowns/strictness levels.
+- **ScrollToll: Screen-Time Gym** — on-device pose estimation watches the user perform exercises in real time (push-ups, squats, stretches), counts reps, checks form, and gates screen time on that — no static photo at all. iOS + Android; third-party tracker shows 1,000+ downloads / 519 ratings at 4.7★ (the safer traction signal vs. the vendor's own larger claimed number).
+- **ScrollToll: Study to Unlock** — a different mechanic again: opening a distracting app triggers an academic question; a correct answer buys ~5 minutes before the lock returns. 4.8★/215 ratings; Pro at $9.99/mo or $49.99/yr.
+
+**What this means for LockedIn's architecture, not just its roadmap:** photo/screenshot AI verification (Phase 8, live and working) is one verification *layer*, not the only one worth having. The stronger long-term shape is three layers, picked per mission type rather than forced into one method:
+1. **Automatic evidence** — device/integration signals that need no user action at proof time (HealthKit workouts/steps, GitHub commits, calendar attendance, learning-app activity). Highest trust, zero submission friction, but each integration is its own native/OAuth build.
+2. **AI-evaluated evidence** — what Phase 8/10 already are: a photo, screenshot, or (per ScrollToll's model) live pose/motion analysis, judged by a model.
+3. **Manual/human evidence** — a fallback for anything with no automatic signal: voice reflection, an accountability-partner approval, or plain self-report for missions where trust matters more than proof.
+
+**Why this isn't being built today:** HealthKit needs its own Apple entitlement (yet another approval queue, same shape as Family Controls) plus a native module — blocked on the same dev-client/Apple Developer Program decision as app-blocking. Live pose estimation needs an on-device ML model (e.g., a pose-detection library) and camera access with a dev client — a real, separate scope decision, not a small addition to `verify-proof`. GitHub/calendar/learning-app integrations are each their own OAuth flow. None of these are a quick bolt-on.
+
+**What's worth doing now, cheaply:** design `missions.verification_method` (or equivalent) as a real enum from the start — `photo | screenshot | automatic | manual` — even before every automatic source exists, so mission creation and the schema don't have to be redesigned later when the first integration lands. Not yet added; flagged here as the concrete next step rather than left as a vague "consider this later."
 
 ---
 

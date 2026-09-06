@@ -20,9 +20,9 @@ function useIsOffline(): boolean {
 
 /**
  * Mounted once inside the (app) tab group — proof/verification calls need this most.
- * Absolutely positioned so it overlays content instead of pushing it down — screens compute
- * their own top inset independently (see StubScreen), so a layout-flow banner would double
- * that padding whenever it's visible.
+ * Absolutely positioned so it overlays content instead of pushing it down — every screen computes
+ * its own top inset independently (e.g. `useSafeAreaInsets()` + `insets.top` throughout `app/`),
+ * so a layout-flow banner would double that padding whenever it's visible.
  */
 export function OfflineBanner() {
   const isOffline = useIsOffline();

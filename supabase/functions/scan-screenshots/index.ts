@@ -22,11 +22,20 @@ import Anthropic from 'npm:@anthropic-ai/sdk@0.123.0';
 import { zodOutputFormat } from 'npm:@anthropic-ai/sdk@0.123.0/helpers/zod';
 import { z } from 'npm:zod@4.5.4';
 
+import { getSubscriptionTier, type SubscriptionTier } from '../_shared/entitlements.ts';
+
 // A hard batch cap (TODO.md §10: "batch size caps... never scan the whole library silently"),
 // enforced server-side — a modified client can't send more images than this in one request no
-// matter what the picker UI allows.
+// matter what the picker UI allows. Flat across tiers: this bounds request size/latency, not
+// cost, so there's no reason to vary it by plan.
 const MAX_BATCH_SIZE = 10;
-const DAILY_SCAN_LIMIT = 60;
+// TODO.md §12's gate list names "Screenshot Intelligence" explicitly — same placeholder-limits
+// caveat as verify-proof's DAILY_VERIFICATION_LIMIT: a real number needs a real pricing decision.
+const DAILY_SCAN_LIMIT: Record<SubscriptionTier, number> = {
+  free: 15,
+  pro: 60,
+  elite: 150,
+};
 
 const CAMPAIGN_KEYS = [
   'careerGrowth',
@@ -130,7 +139,9 @@ Deno.serve(async (req) => {
 
   // §8.1-style server-side quota, extended to §10: incremented by the whole batch size in one
   // atomic call, same reasoning as increment_ai_verification_usage — a compromised client
-  // replaying scan requests should hit a hard daily cap, not an unbounded bill.
+  // replaying scan requests should hit a hard daily cap, not an unbounded bill. §12: tier-aware,
+  // same as verify-proof.
+  const tier = await getSubscriptionTier(supabase, userId);
   const { data: usageCount, error: usageError } = await supabase.rpc(
     'increment_screenshot_scan_usage',
     { p_user_id: userId, p_count: images.length },
@@ -139,8 +150,15 @@ Deno.serve(async (req) => {
     console.error('Quota check failed:', usageError.message);
     return json({ error: 'Could not check scan quota' }, 500);
   }
-  if ((usageCount as number) > DAILY_SCAN_LIMIT) {
-    return json({ error: 'Daily screenshot scan limit reached. Try again tomorrow.' }, 429);
+  if ((usageCount as number) > DAILY_SCAN_LIMIT[tier]) {
+    return json(
+      {
+        error: 'Daily screenshot scan limit reached. Try again tomorrow.',
+        tier,
+        limit: DAILY_SCAN_LIMIT[tier],
+      },
+      429,
+    );
   }
 
   const anthropic = new Anthropic({ apiKey: anthropicApiKey });

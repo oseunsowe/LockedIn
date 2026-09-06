@@ -88,8 +88,8 @@ const pairs: Pair[] = [
     bg: semantic.bg.surface,
   },
 
-  // `semantic.action.primary` used directly as a foreground (ModalStub's "PHASE" label, dashboard
-  // links) against canvas.
+  // `semantic.action.primary` used directly as a foreground (onboarding icon tints) against
+  // canvas.
   {
     name: 'action.primary on bg.canvas (accent-colored labels)',
     fg: semantic.action.primary,

@@ -16,7 +16,16 @@ import Anthropic from 'npm:@anthropic-ai/sdk@0.123.0';
 import { zodOutputFormat } from 'npm:@anthropic-ai/sdk@0.123.0/helpers/zod';
 import { z } from 'npm:zod@4.5.4';
 
-const DAILY_VERIFICATION_LIMIT = 20;
+import { getSubscriptionTier, type SubscriptionTier } from '../_shared/entitlements.ts';
+
+// TODO.md §12's gate list names "AI verification volume" explicitly — placeholder limits, a
+// product/pricing decision nobody has made yet, not a final number. The point being demonstrated
+// is the mechanism (a real per-tier server-side check), not these specific figures.
+const DAILY_VERIFICATION_LIMIT: Record<SubscriptionTier, number> = {
+  free: 5,
+  pro: 20,
+  elite: 50,
+};
 const SIGNED_URL_TTL_SECONDS = 300;
 const IMAGE_PROOF_TYPES = new Set(['photo', 'screenshot']);
 
@@ -174,7 +183,9 @@ Deno.serve(async (req) => {
   // §8.1: server-side quota per user per day, checked (and consumed) immediately before the paid
   // Claude call — even a failed/erroring attempt below still counts, which is deliberate: it's
   // what stops a retry storm from a compromised or buggy client from costing more than the quota
-  // allows.
+  // allows. §12: the limit itself is now tier-aware, read from `subscriptions` (service_role-only
+  // writes), not anything the client asserts about its own plan.
+  const tier = await getSubscriptionTier(supabase, userId);
   const { data: usageCount, error: usageError } = await supabase.rpc(
     'increment_ai_verification_usage',
     { p_user_id: userId },
@@ -183,8 +194,15 @@ Deno.serve(async (req) => {
     console.error('Quota check failed:', usageError.message);
     return json({ error: 'Could not check verification quota' }, 500);
   }
-  if ((usageCount as number) > DAILY_VERIFICATION_LIMIT) {
-    return json({ error: 'Daily verification limit reached. Try again tomorrow.' }, 429);
+  if ((usageCount as number) > DAILY_VERIFICATION_LIMIT[tier]) {
+    return json(
+      {
+        error: 'Daily verification limit reached. Try again tomorrow.',
+        tier,
+        limit: DAILY_VERIFICATION_LIMIT[tier],
+      },
+      429,
+    );
   }
 
   // §8.1: signed, expiring URL — the `proofs` bucket is private; this is the only way Claude (or

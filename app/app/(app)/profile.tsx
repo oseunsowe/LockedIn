@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -14,9 +15,12 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useDeleteAccount } from '@/hooks/useDeleteAccount';
+import { useSubscription } from '@/hooks/useSubscription';
 import { useUpdateDisplayName } from '@/hooks/useUpdateDisplayName';
 import { useAuth } from '@/state/auth';
 import { Icon, radius, semantic, space, type } from '@/theme';
+
+const tierLabel: Record<string, string> = { free: 'Free', pro: 'Pro', elite: 'Elite' };
 
 // Hash-routed tabs on the same hosted legal doc (Privacy Policy default, Terms via #terms) — see
 // TODO.md §16's "Privacy policy + terms (hosted, linked in-app)."
@@ -24,18 +28,21 @@ const LEGAL_URL = 'https://claude.ai/code/artifact/9c10254e-de96-4f53-9e13-30086
 
 /**
  * Account/Profile (distinct from Progress Profile — TODO.md §11's "Progress" tab covers level/XP/
- * achievements/stats; this tab is account identity and settings). Subscription status (Phase 12)
- * and notification preferences (Phase 13) aren't built yet, so this stays intentionally small
- * rather than padding it out with "Coming soon" rows that don't do anything — what's here (display
- * name, legal links, account deletion, sign out) is real. The "Seed Demo Missions" testing button
- * that used to live here is gone for good — see `useSeedDemoData`'s own doc comment, which called
- * for exactly this removal before shipping.
+ * achievements/stats; this tab is account identity and settings). Notification preferences
+ * (Phase 13) aren't built yet, so this stays intentionally small rather than padding it out with
+ * "Coming soon" rows that don't do anything. Plan status (Phase 12) is real as far as it goes —
+ * every account genuinely has a `tier` in `subscriptions`, and it genuinely gates AI verification/
+ * screenshot-scan volume server-side — the Subscribe button on the Paywall it links to is the
+ * part still disabled, pending a RevenueCat account and App Store Connect products. The "Seed Demo
+ * Missions" testing button that used to live here is gone for good — see `useSeedDemoData`'s own
+ * doc comment, which called for exactly this removal before shipping.
  */
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { session, profile, signOut, refreshProfile } = useAuth();
   const updateDisplayName = useUpdateDisplayName(session?.user.id);
   const deleteAccount = useDeleteAccount();
+  const subscriptionQuery = useSubscription(session?.user.id);
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
@@ -141,6 +148,24 @@ export default function ProfileScreen() {
         <Text style={styles.meta}>
           {profile.identity_class ?? 'no class set'} · Level {profile.level}
         </Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>PLAN</Text>
+        <Pressable
+          style={styles.linkRow}
+          onPress={() => router.push('/(modals)/paywall')}
+          accessibilityRole="button"
+          accessibilityLabel={`View plans — currently on ${tierLabel[subscriptionQuery.data?.tier ?? 'free']}`}
+        >
+          <View style={styles.planRowText}>
+            <Text style={styles.linkLabel}>
+              {tierLabel[subscriptionQuery.data?.tier ?? 'free']} Plan
+            </Text>
+            <Text style={styles.planRowSub}>See daily limits &amp; upgrade options</Text>
+          </View>
+          <Icon name="link" size={16} color={semantic.text.tertiary} />
+        </Pressable>
       </View>
 
       <View style={styles.section}>
@@ -319,6 +344,14 @@ const styles = StyleSheet.create({
   linkLabel: {
     ...type.bodyMedium,
     color: semantic.text.primary,
+  },
+  planRowText: {
+    gap: 2,
+  },
+  planRowSub: {
+    ...type.caption,
+    fontSize: 12,
+    color: semantic.text.tertiary,
   },
   signOutButton: {
     paddingVertical: space.md,
