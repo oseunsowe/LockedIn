@@ -20,7 +20,8 @@ import { radius, semantic, space, type } from '@/theme';
  */
 export default function Auth() {
   const insets = useSafeAreaInsets();
-  const { signInWithApple, signInWithEmail, signUpWithEmail, session } = useAuth();
+  const { signInWithApple, signInWithGoogle, signInWithEmail, signUpWithEmail, session } =
+    useAuth();
   const { identityClass, selectedCampaigns } = useOnboardingDraft();
 
   const [appleAvailable, setAppleAvailable] = useState(false);
@@ -78,6 +79,12 @@ export default function Auth() {
     if (err) setError(err);
   }
 
+  async function handleGoogle() {
+    setError(null);
+    const { error: err } = await signInWithGoogle();
+    if (err) setError(err);
+  }
+
   async function handleEmailSubmit() {
     setError(null);
     setSubmitting(true);
@@ -113,6 +120,15 @@ export default function Auth() {
             onPress={handleApple}
           />
         ) : null}
+
+        <Pressable
+          style={styles.googleButton}
+          onPress={handleGoogle}
+          accessibilityRole="button"
+          accessibilityLabel="Continue with Google"
+        >
+          <Text style={styles.googleButtonLabel}>Continue with Google</Text>
+        </Pressable>
 
         <View style={styles.divider}>
           <View style={styles.dividerLine} />
@@ -190,6 +206,19 @@ const styles = StyleSheet.create({
   },
   appleButton: {
     height: 50,
+  },
+  googleButton: {
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: semantic.border.strong,
+    backgroundColor: semantic.bg.surface,
+  },
+  googleButtonLabel: {
+    ...type.bodyMedium,
+    color: semantic.text.primary,
   },
   divider: {
     flexDirection: 'row',

@@ -22,7 +22,6 @@
     },
     "android": {
       "package": "com.lockedin.app",
-      "versionCode": 1,
       "backgroundColor": "#050508",
       "adaptiveIcon": {
         "backgroundColor": "#0F0F1E",
@@ -56,6 +55,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "68a46ac4-ff1e-4167-b77b-7b8c802cf093"
+      }
+    },
+    "owner": "kimkemp"
   }
 }

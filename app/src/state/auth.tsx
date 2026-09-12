@@ -14,6 +14,7 @@ type AuthState = {
   /** The signed-in user's profile row. `null` until loaded, even if `session` is set. */
   profile: Profile | null;
   signInWithApple: () => Promise<AuthResult>;
+  signInWithGoogle: () => Promise<AuthResult>;
   signInWithEmail: (email: string, password: string) => Promise<AuthResult>;
   signUpWithEmail: (email: string, password: string) => Promise<AuthResult>;
   signOut: () => Promise<void>;
@@ -124,6 +125,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return { error: null }; // user dismissed the sheet — not a real error
           }
           return { error: err instanceof Error ? err.message : 'Apple sign-in failed.' };
+        }
+      },
+      async signInWithGoogle() {
+        // @react-native-google-signin/google-signin is a native module — no Expo Go support,
+        // needs a dev-client build (TODO.md §17.1). Dynamic import matches signInWithApple's own
+        // pattern above. Not verified end to end in this environment: no dev-client build exists
+        // yet, and EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID isn't set to a real Google Cloud OAuth client
+        // (see .env.example's note on registering both a web client and an Android client with
+        // this app's SHA-1 fingerprint under the same project).
+        const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+        if (!webClientId) {
+          return { error: 'Google sign-in is not configured yet.' };
+        }
+        const { GoogleSignin, isSuccessResponse } =
+          await import('@react-native-google-signin/google-signin');
+        try {
+          GoogleSignin.configure({ webClientId });
+          await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+          const response = await GoogleSignin.signIn();
+          if (!isSuccessResponse(response)) {
+            return { error: null }; // user dismissed the sheet — not a real error
+          }
+          const idToken = response.data.idToken;
+          if (!idToken) {
+            return { error: 'Google did not return an identity token.' };
+          }
+          const { error } = await supabase.auth.signInWithIdToken({
+            provider: 'google',
+            token: idToken,
+          });
+          return { error: error?.message ?? null };
+        } catch (err) {
+          return { error: err instanceof Error ? err.message : 'Google sign-in failed.' };
         }
       },
       async signInWithEmail(email, password) {
