@@ -166,8 +166,16 @@ main {
 
 .hero {
   position: relative;
-  padding-block: clamp(64px, 12vw, 120px) clamp(48px, 8vw, 80px);
-  max-width: 760px;
+  padding-block: clamp(56px, 10vw, 100px) clamp(40px, 6vw, 64px);
+  display: flex;
+  align-items: center;
+  gap: clamp(24px, 5vw, 64px);
+}
+
+.hero-copy {
+  max-width: 620px;
+  flex: 1 1 460px;
+  min-width: 0;
 }
 
 .hero-glow {
@@ -180,6 +188,109 @@ main {
   filter: blur(10px);
   z-index: -1;
   pointer-events: none;
+}
+
+.hero-phone {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.hero-phone-caption {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--text-tertiary);
+  text-align: center;
+  max-width: 240px;
+}
+
+/* Phone mockup — a real device frame around a real, cropped app screenshot. Screenshots are
+   1170x2532 (real iPhone resolution); each crop-* class oversizes and shifts the image to hide
+   the OS status-bar/back-label at top and an unrelated accessibility overlay near the bottom of
+   the source captures, keeping only genuine app UI in frame. */
+.phone-mockup {
+  width: 260px;
+  aspect-ratio: 9 / 19.5;
+  background: #0a0a12;
+  border-radius: 46px;
+  padding: 12px;
+  box-shadow:
+    0 40px 80px -24px rgba(0, 0, 0, 0.7),
+    0 0 0 1px var(--border-strong);
+  flex-shrink: 0;
+}
+
+.phone-mockup-small {
+  width: 180px;
+}
+
+.phone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 34px;
+  overflow: hidden;
+  background: var(--void);
+}
+
+.phone-screen-img {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.crop-missions {
+  top: 0;
+  height: 122%;
+}
+
+.crop-verified {
+  top: -8%;
+  height: 145%;
+}
+
+.crop-levelup {
+  top: -6%;
+  height: 155%;
+}
+
+.facts-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  padding-block: 32px clamp(48px, 8vw, 88px);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.fact-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(28px, 4vw, 40px);
+  background: linear-gradient(90deg, var(--electric), var(--iris));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.fact-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: var(--text-tertiary);
 }
 
 .hero-title {
@@ -352,6 +463,152 @@ main {
   font-size: 14px;
   color: var(--text-secondary);
   margin: 0;
+}
+
+.section-title-left {
+  text-align: left;
+  margin: 0 0 16px;
+}
+
+.section-sub {
+  text-align: center;
+  color: var(--text-secondary);
+  margin: -32px 0 40px;
+  font-size: 15px;
+}
+
+/* AI showcase — a dark, full-bleed band (the one section on this page allowed to break the
+   default rhythm, per this project's "spend your boldness in one place" design principle) built
+   around a real verify-proof verdict, not a fabricated chat persona. */
+.ai-showcase {
+  display: flex;
+  align-items: center;
+  gap: clamp(32px, 6vw, 72px);
+  margin-inline: calc(-1 * clamp(20px, 5vw, 64px));
+  padding: clamp(48px, 8vw, 88px) clamp(20px, 5vw, 64px);
+  background: linear-gradient(180deg, var(--obsidian), var(--void) 70%);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.ai-showcase-copy {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+.ai-showcase-sub {
+  color: var(--text-secondary);
+  font-size: 15px;
+  max-width: 52ch;
+  margin: 0 0 24px;
+}
+
+.ai-quote {
+  margin: 0 0 24px;
+  padding: 16px 20px;
+  border-left: 2px solid var(--gold);
+  background: color-mix(in srgb, var(--gold) 8%, transparent);
+  border-radius: 0 12px 12px 0;
+  font-size: 14px;
+  font-style: italic;
+  color: var(--pure);
+}
+
+.ai-quote cite {
+  display: block;
+  margin-top: 8px;
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--text-tertiary);
+}
+
+.ai-facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-facts li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.ai-facts li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--electric);
+}
+
+.ai-showcase-phone {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+.phone-mockup-dark {
+  box-shadow:
+    0 40px 100px -20px color-mix(in srgb, var(--electric) 30%, transparent),
+    0 0 0 1px var(--border-strong);
+}
+
+.goals {
+  padding-block: clamp(48px, 8vw, 96px);
+  border-top: 1px solid var(--border-subtle);
+  text-align: center;
+}
+
+.goals-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.goal-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border-subtle));
+  background: color-mix(in srgb, var(--accent) 12%, var(--obsidian));
+  font-size: 14px;
+  color: var(--pure);
+}
+
+.goal-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.levelup-band {
+  display: flex;
+  align-items: center;
+  gap: clamp(24px, 5vw, 56px);
+  padding-block: clamp(48px, 8vw, 88px);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.levelup-copy {
+  flex: 1 1 380px;
+  min-width: 0;
 }
 
 .features {
@@ -536,6 +793,50 @@ main {
   }
 }
 
+@media (max-width: 860px) {
+  .hero {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .hero-copy {
+    max-width: 100%;
+  }
+
+  .waitlist-form {
+    margin-inline: auto;
+  }
+
+  .ai-showcase,
+  .levelup-band {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .ai-facts {
+    align-items: center;
+  }
+
+  .ai-facts li {
+    padding-left: 0;
+    padding-top: 16px;
+  }
+
+  .ai-facts li::before {
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+  }
+
+  .section-title-left {
+    text-align: center;
+  }
+
+  .facts-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 480px) {
   .site-header {
     padding: 16px 20px;
@@ -552,5 +853,9 @@ main {
   .feature-grid,
   .loop-list {
     grid-template-columns: 1fr;
+  }
+
+  .facts-strip {
+    grid-template-columns: 1fr 1fr;
   }
 }

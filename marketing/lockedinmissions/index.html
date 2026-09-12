@@ -28,59 +28,93 @@
     <main id="top">
       <section class="hero">
         <div class="hero-glow" aria-hidden="true"></div>
-        <p class="eyebrow">In development &middot; Google Play launch coming soon</p>
-        <h1 class="hero-title">
-          <span class="hero-title-line">Become the person</span>
-          <span class="hero-title-line hero-title-gradient">you promised yourself</span>
-          <span class="hero-title-line">you would become.</span>
-        </h1>
-        <p class="hero-sub">
-          Set a mission. Submit proof. Let AI verify it happened. LockedIn turns the goals you
-          keep putting off into missions you actually execute &mdash; XP, streaks, and levels
-          included.
-        </p>
+        <div class="hero-copy">
+          <p class="eyebrow">In development &middot; Google Play launch coming soon</p>
+          <h1 class="hero-title">
+            <span class="hero-title-line">Become the person</span>
+            <span class="hero-title-line hero-title-gradient">you promised yourself</span>
+            <span class="hero-title-line">you would become.</span>
+          </h1>
+          <p class="hero-sub">
+            Set a mission. Submit proof. Let AI verify it happened. LockedIn turns the goals you
+            keep putting off into missions you actually execute &mdash; XP, streaks, and levels
+            included.
+          </p>
 
-        <form id="waitlist-form" class="waitlist-form" novalidate>
-          <div class="waitlist-row">
-            <label class="sr-only" for="email">Email address</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              required
-              autocomplete="email"
-            />
-            <button type="submit" id="waitlist-submit" class="btn btn-primary">
-              Join the Waitlist
-            </button>
+          <form id="waitlist-form" class="waitlist-form" novalidate>
+            <div class="waitlist-row">
+              <label class="sr-only" for="email">Email address</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                required
+                autocomplete="email"
+              />
+              <button type="submit" id="waitlist-submit" class="btn btn-primary">
+                Join the Waitlist
+              </button>
+            </div>
+
+            <!-- Honeypot: hidden from real users via CSS, invisible to screen readers via
+                 aria-hidden + tabindex, but a naive bot filling every field will trip it. -->
+            <div class="honeypot" aria-hidden="true">
+              <label for="company">Company</label>
+              <input id="company" name="company" type="text" tabindex="-1" autocomplete="off" />
+            </div>
+
+            <fieldset class="platform-fieldset">
+              <legend class="sr-only">Which platform are you on?</legend>
+              <label class="platform-chip">
+                <input type="radio" name="platform" value="android" checked />
+                <span>Android</span>
+              </label>
+              <label class="platform-chip">
+                <input type="radio" name="platform" value="ios" />
+                <span>iOS</span>
+              </label>
+              <label class="platform-chip">
+                <input type="radio" name="platform" value="both" />
+                <span>Both</span>
+              </label>
+            </fieldset>
+
+            <p id="waitlist-status" class="waitlist-status" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <div class="hero-phone" aria-hidden="true">
+          <div class="phone-mockup">
+            <div class="phone-screen">
+              <img
+                src="./assets/screenshot-missions.png"
+                alt=""
+                class="phone-screen-img crop-missions"
+              />
+            </div>
           </div>
+          <p class="hero-phone-caption">The real Mission Board &mdash; live in the app today.</p>
+        </div>
+      </section>
 
-          <!-- Honeypot: hidden from real users via CSS, invisible to screen readers via
-               aria-hidden + tabindex, but a naive bot filling every field will trip it. -->
-          <div class="honeypot" aria-hidden="true">
-            <label for="company">Company</label>
-            <input id="company" name="company" type="text" tabindex="-1" autocomplete="off" />
-          </div>
-
-          <fieldset class="platform-fieldset">
-            <legend class="sr-only">Which platform are you on?</legend>
-            <label class="platform-chip">
-              <input type="radio" name="platform" value="android" checked />
-              <span>Android</span>
-            </label>
-            <label class="platform-chip">
-              <input type="radio" name="platform" value="ios" />
-              <span>iOS</span>
-            </label>
-            <label class="platform-chip">
-              <input type="radio" name="platform" value="both" />
-              <span>Both</span>
-            </label>
-          </fieldset>
-
-          <p id="waitlist-status" class="waitlist-status" role="status" aria-live="polite"></p>
-        </form>
+      <section class="facts-strip" aria-label="Real product facts">
+        <div class="fact">
+          <span class="fact-num">3</span>
+          <span class="fact-label">proof types<br />photo &middot; screenshot &middot; file</span>
+        </div>
+        <div class="fact">
+          <span class="fact-num">0</span>
+          <span class="fact-label">screenshots<br />ever stored on our servers</span>
+        </div>
+        <div class="fact">
+          <span class="fact-num">8</span>
+          <span class="fact-label">goal categories<br />to build missions around</span>
+        </div>
+        <div class="fact">
+          <span class="fact-num">2</span>
+          <span class="fact-label">platforms<br />iOS and Android</span>
+        </div>
       </section>
 
       <section class="loop" aria-labelledby="loop-heading">
@@ -115,6 +149,79 @@
             <p>Real XP, real streaks, real levels. Come back tomorrow and do it again.</p>
           </li>
         </ol>
+      </section>
+
+      <section class="ai-showcase" aria-labelledby="ai-showcase-heading">
+        <div class="ai-showcase-copy">
+          <p class="eyebrow">Real ai, not a rubber stamp</p>
+          <h2 id="ai-showcase-heading" class="section-title section-title-left">
+            Claude reads your evidence and tells you why.
+          </h2>
+          <p class="ai-showcase-sub">
+            No checkbox, no honor system. Submit a photo and Claude looks at what's actually in
+            it, judges whether it plausibly shows the mission done, and writes back its reasoning
+            in plain language &mdash; not just a pass/fail.
+          </p>
+          <blockquote class="ai-quote">
+            &ldquo;It reads like a real reading session. A photo can&rsquo;t clock the full 30
+            minutes, but this is solid proof you were in the pages.&rdquo;
+            <cite>&mdash; an actual verification from the LockedIn verify-proof pipeline</cite>
+          </blockquote>
+          <ul class="ai-facts">
+            <li>Generous, not adversarial &mdash; this is accountability, not fraud detection</li>
+            <li>Every verdict carries a real confidence score, never a lie-detector claim</li>
+            <li>Low confidence means &ldquo;try again,&rdquo; never a bare rejection</li>
+          </ul>
+        </div>
+        <div class="ai-showcase-phone">
+          <div class="phone-mockup phone-mockup-dark">
+            <div class="phone-screen">
+              <img
+                src="./assets/screenshot-verified.png"
+                alt="Real LockedIn screen: Mission Verified, 78% confidence, with Claude's written reasoning and a plus 100 XP reward"
+                class="phone-screen-img crop-verified"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="goals" aria-labelledby="goals-heading">
+        <h2 id="goals-heading" class="section-title">A mission for every goal</h2>
+        <p class="section-sub">
+          Pick from the same 8 categories every LockedIn mission is actually built around.
+        </p>
+        <div class="goals-grid">
+          <div class="goal-chip" style="--accent:#3A83E8"><span class="goal-dot"></span>Career Growth</div>
+          <div class="goal-chip" style="--accent:#D5AE36"><span class="goal-dot"></span>Build a Business</div>
+          <div class="goal-chip" style="--accent:#0FB3CA"><span class="goal-dot"></span>Learn a Skill</div>
+          <div class="goal-chip" style="--accent:#ED7723"><span class="goal-dot"></span>Improve Fitness</div>
+          <div class="goal-chip" style="--accent:#1DAA7C"><span class="goal-dot"></span>Increase Income</div>
+          <div class="goal-chip" style="--accent:#DE4B92"><span class="goal-dot"></span>Create Content</div>
+          <div class="goal-chip" style="--accent:#D64764"><span class="goal-dot"></span>Improve Health</div>
+          <div class="goal-chip" style="--accent:#885FED"><span class="goal-dot"></span>Personal Growth</div>
+        </div>
+      </section>
+
+      <section class="levelup-band">
+        <div class="phone-mockup phone-mockup-small">
+          <div class="phone-screen">
+            <img
+              src="./assets/screenshot-levelup.png"
+              alt="Real LockedIn screen: Level 2 Unlocked celebration"
+              class="phone-screen-img crop-levelup"
+            />
+          </div>
+        </div>
+        <div class="levelup-copy">
+          <p class="eyebrow">Gamification that means something</p>
+          <h2 class="section-title section-title-left">Every level is earned, not given.</h2>
+          <p class="ai-showcase-sub">
+            XP only ever comes from a verified mission, written to an append-only ledger. Your
+            level is derived from that ledger every time &mdash; never a number invented to keep
+            you engaged.
+          </p>
+        </div>
       </section>
 
       <section class="features" aria-labelledby="features-heading">
