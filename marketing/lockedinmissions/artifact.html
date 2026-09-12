@@ -1,0 +1,234 @@
+<title>LockedIn Waitlist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap"
+  rel="stylesheet"
+/>
+<link rel="stylesheet" href="style.css" />
+
+    <div class="noise" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="wordmark" href="#top">Locked<span class="wordmark-in">In</span></a>
+      <a class="btn btn-small btn-primary" href="#waitlist">Join Waitlist</a>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-glow" aria-hidden="true"></div>
+        <p class="eyebrow">In development &middot; Google Play launch coming soon</p>
+        <h1 class="hero-title">
+          <span class="hero-title-line">Become the person</span>
+          <span class="hero-title-line hero-title-gradient">you promised yourself</span>
+          <span class="hero-title-line">you would become.</span>
+        </h1>
+        <p class="hero-sub">
+          Set a mission. Submit proof. Let AI verify it happened. LockedIn turns the goals you
+          keep putting off into missions you actually execute &mdash; XP, streaks, and levels
+          included.
+        </p>
+
+        <form id="waitlist-form" class="waitlist-form" novalidate>
+          <div class="waitlist-row">
+            <label class="sr-only" for="email">Email address</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              required
+              autocomplete="email"
+            />
+            <button type="submit" id="waitlist-submit" class="btn btn-primary">
+              Join the Waitlist
+            </button>
+          </div>
+
+          <!-- Honeypot: hidden from real users via CSS, invisible to screen readers via
+               aria-hidden + tabindex, but a naive bot filling every field will trip it. -->
+          <div class="honeypot" aria-hidden="true">
+            <label for="company">Company</label>
+            <input id="company" name="company" type="text" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <fieldset class="platform-fieldset">
+            <legend class="sr-only">Which platform are you on?</legend>
+            <label class="platform-chip">
+              <input type="radio" name="platform" value="android" checked />
+              <span>Android</span>
+            </label>
+            <label class="platform-chip">
+              <input type="radio" name="platform" value="ios" />
+              <span>iOS</span>
+            </label>
+            <label class="platform-chip">
+              <input type="radio" name="platform" value="both" />
+              <span>Both</span>
+            </label>
+          </fieldset>
+
+          <p id="waitlist-status" class="waitlist-status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="loop" aria-labelledby="loop-heading">
+        <h2 id="loop-heading" class="section-title">The core loop</h2>
+        <ol class="loop-list">
+          <li class="loop-step">
+            <span class="loop-num">01</span>
+            <h3>Onboard</h3>
+            <p>Tell LockedIn your identity class and your goals &mdash; career, fitness, a
+              business, whatever you're building toward.</p>
+          </li>
+          <li class="loop-step">
+            <span class="loop-num">02</span>
+            <h3>Commit to a mission</h3>
+            <p>Main quests, side missions, daily challenges &mdash; picked by you, or pulled from
+              screenshots you already saved and forgot about.</p>
+          </li>
+          <li class="loop-step">
+            <span class="loop-num">03</span>
+            <h3>Submit proof</h3>
+            <p>A photo, a screenshot, a file &mdash; whatever shows the work actually happened.</p>
+          </li>
+          <li class="loop-step">
+            <span class="loop-num">04</span>
+            <h3>AI verifies it</h3>
+            <p>Claude reviews your evidence and gives a real confidence score &mdash; generous,
+              never adversarial, never a bare rejection.</p>
+          </li>
+          <li class="loop-step">
+            <span class="loop-num">05</span>
+            <h3>Level up</h3>
+            <p>Real XP, real streaks, real levels. Come back tomorrow and do it again.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="features" aria-labelledby="features-heading">
+        <h2 id="features-heading" class="section-title">Built to actually hold you to it</h2>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="feature-icon feature-icon-electric">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M9 12l2 2 4-4" />
+                <path
+                  d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"
+                />
+              </svg>
+            </div>
+            <h3>AI-verified proof</h3>
+            <p>
+              No box-checking. A real model looks at what you submitted and judges whether it
+              plausibly shows the mission got done &mdash; with a confidence score, not a lie
+              detector.
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon feature-icon-violet">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="4" y="3" width="16" height="18" rx="2" />
+                <path d="M8 8h8M8 12h8M8 16h5" />
+              </svg>
+            </div>
+            <h3>Screenshot Intelligence</h3>
+            <p>
+              That course you screenshotted three months ago and never opened? LockedIn finds the
+              real intention hiding in it and offers to turn it into a mission. Screenshots are
+              analyzed and immediately discarded &mdash; never stored.
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon feature-icon-gold">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" />
+              </svg>
+            </div>
+            <h3>XP, levels, streaks</h3>
+            <p>
+              Every verified mission writes to a real, auditable XP ledger. Levels and streaks are
+              derived from it &mdash; never a number invented to make you feel good.
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon feature-icon-iris">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M3 12a9 9 0 1 0 3-6.7" />
+                <path d="M3 4v5h5" />
+              </svg>
+            </div>
+            <h3>Recovery Mode</h3>
+            <p>
+              Miss a deadline and nothing turns red. No broken-streak funeral, no shame &mdash;
+              Recovery Mode resets the clock and gets you moving again.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="cta-band" id="waitlist" aria-labelledby="cta-heading">
+        <h2 id="cta-heading">Be first to know when LockedIn lands on Google Play.</h2>
+        <p>No spam. One email, the day it's live.</p>
+        <a class="btn btn-primary btn-large" href="#top" id="cta-scroll-top">Join the Waitlist</a>
+      </section>
+
+      <section class="faq" aria-labelledby="faq-heading">
+        <h2 id="faq-heading" class="section-title">Questions</h2>
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary>What is LockedIn, exactly?</summary>
+            <p>
+              A mission-based accountability app. You turn a real goal into a mission with a
+              deadline and a proof requirement, submit evidence when you're done, and an AI
+              verifies it &mdash; rather than trusting an honor-system checkbox.
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>When does it launch?</summary>
+            <p>
+              We're finishing Google Play developer account setup now. Join the waitlist and
+              you'll get one email the moment it's live &mdash; nothing before that.
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>Is it free?</summary>
+            <p>
+              Yes, with a free daily allowance of AI verifications and screenshot scans that's
+              generous enough to run the app for real. Higher-volume tiers are planned for anyone
+              who wants more per day.
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>What actually happens to my photos?</summary>
+            <p>
+              Proof photos are stored privately and used only to verify that specific mission.
+              Screenshots submitted to Screenshot Intelligence are analyzed and discarded
+              immediately &mdash; there's no storage bucket for them at all. Full detail is in the
+              <a href="https://claude.ai/code/artifact/9c10254e-de96-4f53-9e13-30086553c71f#privacy" target="_blank" rel="noopener">Privacy Policy</a>.
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>iOS too?</summary>
+            <p>Yes &mdash; LockedIn ships on both iOS and Android.</p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <a class="wordmark wordmark-small" href="#top">Locked<span class="wordmark-in">In</span></a>
+      <nav class="footer-links">
+        <a href="https://claude.ai/code/artifact/9c10254e-de96-4f53-9e13-30086553c71f#privacy" target="_blank" rel="noopener">Privacy Policy</a>
+        <a href="https://claude.ai/code/artifact/9c10254e-de96-4f53-9e13-30086553c71f#terms" target="_blank" rel="noopener">Terms of Service</a>
+        <a href="mailto:info@econnectech.com.ng">info@econnectech.com.ng</a>
+      </nav>
+      <p class="footer-meta">&copy; 2026 LockedIn. Built in public.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="./script.js"></script>
+  
