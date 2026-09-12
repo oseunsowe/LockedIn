@@ -385,8 +385,9 @@ export default function CreateMissionModal() {
               colors={gradients.xp}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              style={[styles.cta, glow(palette.electric)]}
+              style={[styles.cta, styles.ctaRow, glow(palette.electric)]}
             >
+              <Icon name="locked" size={16} color={semantic.text.onAccent} />
               <Text style={styles.ctaLabel}>
                 {createMission.isPending ? 'Locking In…' : 'Lock In Mission'}
               </Text>
@@ -578,6 +579,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: space.lg,
     borderRadius: radius.pill,
+  },
+  ctaRow: {
+    flexDirection: 'row',
+    gap: space.sm,
   },
   ctaDisabled: {
     backgroundColor: semantic.bg.surface,

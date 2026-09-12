@@ -97,6 +97,7 @@ export default function MissionBoard() {
                       <MissionCard
                         key={mission.id}
                         mission={mission}
+                        hero={section.type === 'main'}
                         onPress={() =>
                           router.push({
                             pathname: '/(modals)/active-mission',

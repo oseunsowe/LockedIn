@@ -1,9 +1,21 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { formatTimeRemaining } from '@/lib/time';
-import { parseProofRequirements, type Mission } from '@/lib/missions';
-import { glow, gradients, Icon, palette, radius, semantic, space, type, withAlpha } from '@/theme';
+import { LockDial } from './LockDial';
+import { computeElapsedProgress, formatCountdownCompact, isUrgent } from '@/lib/time';
+import { difficultyMeta, parseProofRequirements, type Mission } from '@/lib/missions';
+import {
+  fontFamily,
+  glow,
+  gradients,
+  Icon,
+  palette,
+  radius,
+  semantic,
+  space,
+  type,
+  withAlpha,
+} from '@/theme';
 
 type MainQuestCardProps = {
   mission: Mission;
@@ -17,6 +29,10 @@ type MainQuestCardProps = {
  */
 export function MainQuestCard({ mission, onPress }: MainQuestCardProps) {
   const proofChips = parseProofRequirements(mission.proof_requirements);
+  const difficulty = difficultyMeta[mission.difficulty];
+  const elapsed = computeElapsedProgress(mission.created_at, mission.deadline);
+  const countdown = formatCountdownCompact(mission.deadline);
+  const urgent = isUrgent(mission.deadline);
 
   return (
     <Pressable
@@ -39,10 +55,19 @@ export function MainQuestCard({ mission, onPress }: MainQuestCardProps) {
         {mission.title}
       </Text>
       <View style={styles.metaRow}>
-        <View style={styles.metaChip}>
-          <Icon name="timer" size={14} color={semantic.text.secondary} />
-          <Text style={styles.metaText}>{formatTimeRemaining(mission.deadline)}</Text>
-        </View>
+        <LockDial
+          size={56}
+          progress={elapsed === null ? 1 : 1 - elapsed / 100}
+          colors={[difficulty.color, difficulty.color]}
+          urgent={urgent}
+          gradientId={`main-quest-${mission.id}`}
+        >
+          <Text style={styles.dialValue}>
+            {countdown.value}
+            {countdown.unit.length === 1 ? countdown.unit : ''}
+          </Text>
+          <Text style={styles.dialUnit}>{countdown.unit.length === 1 ? 'left' : ''}</Text>
+        </LockDial>
         <View style={styles.metaChip}>
           <Icon name="xp" size={14} color={palette.gold} />
           <Text style={[styles.metaText, { color: palette.gold }]}>+{mission.xp_reward} XP</Text>
@@ -87,7 +112,22 @@ const styles = StyleSheet.create({
   },
   metaRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: space.md,
+  },
+  dialValue: {
+    fontFamily: fontFamily.monoSemiBold,
+    fontSize: 14,
+    color: semantic.text.primary,
+    lineHeight: 16,
+  },
+  dialUnit: {
+    fontFamily: fontFamily.monoSemiBold,
+    fontSize: 8,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: semantic.text.tertiary,
+    marginTop: 2,
   },
   metaChip: {
     flexDirection: 'row',

@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { LockDial } from '@/components/LockDial';
 import { useCountdown } from '@/hooks/useCountdown';
 import { useMission } from '@/hooks/useMission';
 import { useSetMissionStatus } from '@/hooks/useMissionStatus';
-import { computeElapsedProgress } from '@/lib/time';
+import { computeElapsedProgress, isUrgent } from '@/lib/time';
 import { difficultyMeta, parseProofRequirements, type Mission } from '@/lib/missions';
 import { useAuth } from '@/state/auth';
 import {
@@ -136,20 +137,32 @@ export default function ActiveMissionScreen() {
           {difficulty.label} Difficulty
         </Text>
 
-        {countdown ? (
-          <View style={styles.timerBlock}>
-            <Text
-              style={[styles.timer, countdown.overdue ? { color: semantic.state.warning } : null]}
-            >
-              {countdown.label}
-            </Text>
-            <Text style={styles.timerLabel}>{countdown.overdue ? 'OVERDUE' : 'REMAINING'}</Text>
-          </View>
-        ) : (
-          <View style={styles.timerBlock}>
-            <Text style={styles.noDeadline}>No deadline — take your time.</Text>
-          </View>
-        )}
+        <View style={styles.dialWrap}>
+          <LockDial
+            size={236}
+            strokeWidth={5}
+            progress={elapsed === null ? 1 : 1 - elapsed / 100}
+            colors={[difficulty.color, difficulty.color]}
+            urgent={countdown?.overdue || isUrgent(mission.deadline)}
+            gradientId={`focus-${mission.id}`}
+          >
+            {countdown ? (
+              <>
+                <Text
+                  style={[
+                    styles.timer,
+                    countdown.overdue ? { color: semantic.state.warning } : null,
+                  ]}
+                >
+                  {countdown.label}
+                </Text>
+                <Text style={styles.timerLabel}>{countdown.overdue ? 'OVERDUE' : 'REMAINING'}</Text>
+              </>
+            ) : (
+              <Text style={styles.noDeadline}>No{'\n'}deadline</Text>
+            )}
+          </LockDial>
+        </View>
 
         {countdown?.overdue ? (
           <View style={styles.recoveryCard}>
@@ -170,15 +183,6 @@ export default function ActiveMissionScreen() {
                 {setMissionStatus.isPending ? 'Activating…' : 'Activate Recovery Mode'}
               </Text>
             </Pressable>
-          </View>
-        ) : null}
-
-        {elapsed !== null ? (
-          <View style={styles.progressBlock}>
-            <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, { width: `${elapsed}%` }]} />
-            </View>
-            <Text style={styles.progressLabel}>{Math.round(elapsed)}% TIME ELAPSED</Text>
           </View>
         ) : null}
 
@@ -299,23 +303,25 @@ const styles = StyleSheet.create({
   difficultyLabel: {
     ...type.caption,
   },
-  timerBlock: {
+  dialWrap: {
     alignItems: 'center',
     marginTop: space.xl,
-    gap: space.xs,
   },
   timer: {
     fontFamily: fontFamily.monoSemiBold,
-    fontSize: 48,
+    fontSize: 34,
+    letterSpacing: -0.5,
     color: semantic.text.primary,
   },
   timerLabel: {
     ...type.data,
+    marginTop: space.xs,
     color: semantic.text.tertiary,
   },
   noDeadline: {
-    ...type.body,
+    ...type.caption,
     color: semantic.text.secondary,
+    textAlign: 'center',
   },
   recoveryCard: {
     width: '100%',
@@ -346,28 +352,6 @@ const styles = StyleSheet.create({
   recoveryButtonLabel: {
     ...type.bodyMedium,
     color: semantic.text.onAccent,
-  },
-  progressBlock: {
-    width: '100%',
-    alignItems: 'center',
-    gap: space.xs,
-    marginTop: space.md,
-  },
-  progressTrack: {
-    width: '100%',
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: semantic.border.subtle,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 3,
-    backgroundColor: palette.electric,
-  },
-  progressLabel: {
-    ...type.data,
-    color: semantic.text.tertiary,
   },
   section: {
     width: '100%',

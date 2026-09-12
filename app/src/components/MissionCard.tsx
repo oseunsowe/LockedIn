@@ -1,9 +1,28 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { DifficultyMeter } from './DifficultyMeter';
-import { formatTimeRemaining } from '@/lib/time';
+import { LockDial } from './LockDial';
+import {
+  computeElapsedProgress,
+  formatCountdownCompact,
+  formatTimeRemaining,
+  isUrgent,
+} from '@/lib/time';
 import { difficultyMeta, parseProofRequirements, type Mission } from '@/lib/missions';
-import { Icon, type IconName, palette, radius, semantic, space, type, withAlpha } from '@/theme';
+import {
+  fontFamily,
+  glow,
+  gradients,
+  Icon,
+  type IconName,
+  palette,
+  radius,
+  semantic,
+  space,
+  type,
+  withAlpha,
+} from '@/theme';
 
 const typeMeta: Record<Mission['type'], { icon: IconName; label: string }> = {
   main: { icon: 'mainQuest', label: 'MAIN QUEST' },
@@ -14,6 +33,9 @@ const typeMeta: Record<Mission['type'], { icon: IconName; label: string }> = {
 type MissionCardProps = {
   mission: Mission;
   onPress: () => void;
+  /** The Mission Board's one dominant mission (TODO.md §6) gets more visual weight — a gradient
+   * wash, a glow, and a larger dial — never a second list-style card competing for attention. */
+  hero?: boolean;
 };
 
 /**
@@ -25,18 +47,32 @@ type MissionCardProps = {
  *
  * Tapping opens Active Mission Mode (§7.3, `app/(modals)/active-mission.tsx`) for this mission.
  */
-export function MissionCard({ mission, onPress }: MissionCardProps) {
+export function MissionCard({ mission, onPress, hero = false }: MissionCardProps) {
   const meta = typeMeta[mission.type];
   const difficulty = difficultyMeta[mission.difficulty];
   const proofChips = parseProofRequirements(mission.proof_requirements);
+  const elapsed = computeElapsedProgress(mission.created_at, mission.deadline);
+  const countdown = formatCountdownCompact(mission.deadline);
+  const urgent = isUrgent(mission.deadline);
 
   return (
     <Pressable
-      style={styles.card}
+      style={[
+        styles.card,
+        hero ? [styles.cardHero, glow(palette.electric, { opacity: 0.28 })] : null,
+      ]}
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`Open mission: ${mission.title}`}
+      accessibilityLabel={`Open mission: ${mission.title}, ${formatTimeRemaining(mission.deadline)}`}
     >
+      {hero ? (
+        <LinearGradient
+          colors={[withAlpha(gradients.xp[0], 0.16), withAlpha(gradients.xp[1], 0.05)]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      ) : null}
       <View style={styles.topRow}>
         <View style={styles.kickerRow}>
           <Icon name={meta.icon} size={14} color={semantic.text.tertiary} />
@@ -47,7 +83,7 @@ export function MissionCard({ mission, onPress }: MissionCardProps) {
         </View>
       </View>
 
-      <Text style={styles.title} numberOfLines={2}>
+      <Text style={[styles.title, hero ? styles.titleHero : null]} numberOfLines={2}>
         {mission.title}
       </Text>
 
@@ -58,7 +94,18 @@ export function MissionCard({ mission, onPress }: MissionCardProps) {
             {difficulty.label}
           </Text>
         </View>
-        <Text style={styles.timeRemaining}>{formatTimeRemaining(mission.deadline)}</Text>
+        <LockDial
+          size={hero ? 56 : 40}
+          progress={elapsed === null ? 1 : 1 - elapsed / 100}
+          colors={[difficulty.color, difficulty.color]}
+          urgent={urgent}
+          gradientId={`mission-card-${mission.id}`}
+        >
+          <Text style={[styles.dialValue, hero ? styles.dialValueHero : null]}>
+            {countdown.value}
+            {countdown.unit.length === 1 ? countdown.unit : ''}
+          </Text>
+        </LockDial>
       </View>
 
       <View style={styles.bottomRow}>
@@ -88,6 +135,11 @@ const styles = StyleSheet.create({
     backgroundColor: semantic.bg.surface,
     padding: space.md,
     gap: space.sm,
+    overflow: 'hidden',
+  },
+  cardHero: {
+    borderColor: withAlpha(palette.electric, 0.3),
+    padding: space.lg,
   },
   topRow: {
     flexDirection: 'row',
@@ -119,6 +171,10 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: semantic.text.primary,
   },
+  titleHero: {
+    ...type.title,
+    color: semantic.text.primary,
+  },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -133,9 +189,13 @@ const styles = StyleSheet.create({
     ...type.caption,
     fontSize: 12,
   },
-  timeRemaining: {
-    ...type.caption,
-    color: semantic.text.tertiary,
+  dialValue: {
+    fontFamily: fontFamily.monoSemiBold,
+    fontSize: 11,
+    color: semantic.text.primary,
+  },
+  dialValueHero: {
+    fontSize: 14,
   },
   bottomRow: {
     flexDirection: 'row',

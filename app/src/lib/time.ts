@@ -1,23 +1,56 @@
-/**
- * Formats a mission `deadline` (or `null`) as the short "time remaining" label the mission card
- * and mission row need. Wall-clock derived (`Date.now()` at call time, not a stored countdown) —
- * matches TODO.md §7.3's "timer correctness" requirement that nothing here depends on an interval
- * that stops ticking when the app is backgrounded.
- */
-export function formatTimeRemaining(deadline: string | null): string {
-  if (!deadline) return 'No deadline';
+type RemainingParts =
+  | { hasDeadline: false }
+  | { hasDeadline: true; overdue: true }
+  | { hasDeadline: true; overdue: false; amount: number; unit: 'm' | 'h' | 'd' };
+
+/** Wall-clock derived (`Date.now()` at call time, not a stored countdown) — matches TODO.md
+ * §7.3's "timer correctness" requirement that nothing here depends on an interval that stops
+ * ticking when the app is backgrounded. The one place that buckets a deadline into
+ * minutes/hours/days; `formatTimeRemaining` and `formatCountdownCompact` both read off of it so
+ * the sentence and the Lock Dial's center readout can never drift apart. */
+function remainingParts(deadline: string | null): RemainingParts {
+  if (!deadline) return { hasDeadline: false };
 
   const diffMs = new Date(deadline).getTime() - Date.now();
-  if (diffMs <= 0) return 'Overdue';
+  if (diffMs <= 0) return { hasDeadline: true, overdue: true };
 
   const minutes = Math.round(diffMs / 60_000);
-  if (minutes < 60) return `${minutes}m left`;
+  if (minutes < 60) return { hasDeadline: true, overdue: false, amount: minutes, unit: 'm' };
 
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h left`;
+  if (hours < 24) return { hasDeadline: true, overdue: false, amount: hours, unit: 'h' };
 
   const days = Math.round(hours / 24);
-  return `${days}d left`;
+  return { hasDeadline: true, overdue: false, amount: days, unit: 'd' };
+}
+
+/**
+ * Formats a mission `deadline` (or `null`) as the short "time remaining" label the mission card
+ * and mission row need.
+ */
+export function formatTimeRemaining(deadline: string | null): string {
+  const parts = remainingParts(deadline);
+  if (!parts.hasDeadline) return 'No deadline';
+  if (parts.overdue) return 'Overdue';
+  return `${parts.amount}${parts.unit} left`;
+}
+
+/** The Lock Dial's center readout — the same thresholds as `formatTimeRemaining`, split into a
+ * number and a unit so the dial can size them as two lines instead of parsing the sentence
+ * back apart. */
+export function formatCountdownCompact(deadline: string | null): { value: string; unit: string } {
+  const parts = remainingParts(deadline);
+  if (!parts.hasDeadline) return { value: '—', unit: 'no deadline' };
+  if (parts.overdue) return { value: '!', unit: 'overdue' };
+  return { value: String(parts.amount), unit: parts.unit };
+}
+
+/** True once a deadline is inside the "urgent" window (≤1h left, or already past) — layers the
+ * Lock Dial's red pulse ring on top of its tier color without changing what that color means. */
+export function isUrgent(deadline: string | null): boolean {
+  if (!deadline) return false;
+  const diffMs = new Date(deadline).getTime() - Date.now();
+  return diffMs <= 60 * 60 * 1000;
 }
 
 /**
