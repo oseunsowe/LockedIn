@@ -3,6 +3,7 @@ import {
   BadgeCheck,
   Briefcase,
   Camera,
+  CalendarClock,
   ChartNoAxesColumn,
   CircleUser,
   Clock,
@@ -17,6 +18,7 @@ import {
   Link,
   Loader,
   Lock,
+  MessageCircle,
   Mic,
   Paperclip,
   PenLine,
@@ -24,13 +26,16 @@ import {
   Play,
   Repeat,
   RotateCcw,
+  Share2,
   Signal,
+  Smartphone,
   Sparkles,
   Star,
   Sun,
   Swords,
   Timer,
   TrendingUp,
+  Video,
   X,
   Zap,
   Image as ImageGlyph,
@@ -99,6 +104,13 @@ export const iconRegistry = {
   // Chrome
   close: X,
   edit: PenLine,
+  share: Share2,
+  timeline: CalendarClock,
+
+  // Focus Mode distraction categories
+  socialFeed: Smartphone,
+  shortVideo: Video,
+  messaging: MessageCircle,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof iconRegistry;

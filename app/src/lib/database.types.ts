@@ -102,6 +102,8 @@ export type Database = {
           xp_reward: number;
           proof_requirements: Json;
           deadline: string | null;
+          start_time: string | null;
+          end_time: string | null;
           created_at: string;
           completed_at: string | null;
         };
@@ -116,6 +118,8 @@ export type Database = {
           xp_reward: number;
           proof_requirements?: Json;
           deadline?: string | null;
+          start_time?: string | null;
+          end_time?: string | null;
           created_at?: string;
           completed_at?: string | null;
         };

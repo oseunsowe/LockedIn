@@ -43,6 +43,51 @@ export function levelForXp(totalXp: number): number {
   return level;
 }
 
+/**
+ * Original LockedIn rank titles, one per 10-level band (levels 1-100, matching level_thresholds'
+ * ceiling). Purely presentational — the real progression is the numeric level/XP curve above;
+ * these are flavor text over that real data, not a separate system, and the names are our own
+ * (discipline/lock theme), not borrowed from any reference app.
+ */
+const RANK_TITLES = [
+  'Initiate',
+  'Operative',
+  'Disciplined',
+  'Relentless',
+  'Unshaken',
+  'Ironclad',
+  'Vanguard',
+  'Unbreakable',
+  'Locked In',
+  'Legend',
+] as const;
+
+export function rankForLevel(level: number): string {
+  const band = Math.min(Math.floor((clampLevel(level) - 1) / 10), RANK_TITLES.length - 1);
+  return RANK_TITLES[band]!;
+}
+
+export type RankMilestone = {
+  rank: string;
+  /** The level at which this rank is first reached. */
+  level: number;
+  /** Cumulative XP required to reach `level` (same source as `xpForLevel`). */
+  xpRequired: number;
+};
+
+/** One entry per rank band (TODO.md §9's rank ladder), for the level-up screen's "Journey" list. */
+export function rankMilestones(): RankMilestone[] {
+  return RANK_TITLES.map((rank, band) => {
+    const level = band * 10 + 1;
+    return { rank, level, xpRequired: xpForLevel(level) };
+  });
+}
+
+/** The next rank milestone strictly above `totalXp`, or `null` once the last rank is reached. */
+export function nextRankMilestone(totalXp: number): RankMilestone | null {
+  return rankMilestones().find((milestone) => milestone.xpRequired > totalXp) ?? null;
+}
+
 export type LevelProgress = {
   level: number;
   /** XP earned within the current level (0 at the moment of leveling up). */

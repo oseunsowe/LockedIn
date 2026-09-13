@@ -782,6 +782,85 @@ main {
   min-width: 0;
 }
 
+/* App Store-style preview slides — the one deliberately light-background section on an otherwise
+   dark page, matching how App Store screenshot galleries are actually presented (bold dark
+   headline over a pale ground, real device frame below). Two real screens, not stock photos. */
+.showcase {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(16px, 3vw, 28px);
+  padding-block: clamp(48px, 8vw, 88px);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.showcase-slide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(20px, 4vw, 32px);
+  padding: clamp(28px, 5vw, 44px) clamp(20px, 4vw, 32px);
+  border-radius: 28px;
+  background: linear-gradient(165deg, #f4f3fb, #e9e7f5 55%, #ded9f2);
+  overflow: hidden;
+}
+
+.showcase-slide-focus {
+  background: linear-gradient(165deg, #f6f3f0, #ede4de 55%, #e4d6cb);
+}
+
+.showcase-headline {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.15;
+  color: #0b0b12;
+  text-align: center;
+  margin: 0;
+}
+
+.showcase-headline span {
+  background: linear-gradient(90deg, var(--violet), var(--electric));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.showcase-phone-stage {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.showcase-phone {
+  width: min(220px, 60vw);
+}
+
+.showcase-caption {
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(11, 11, 18, 0.6);
+  text-align: center;
+  max-width: 34ch;
+  margin: -8px 0 0;
+}
+
+/* Same object-fit: cover + scale/pan treatment as the dark-theme crops above (see that comment) —
+   these two screenshots come from a headless-browser capture of the real screens at real device
+   resolution (1170x2532), not a native device, but the cropping approach is identical. */
+.crop-journey {
+  transform: scale(0.96) translateY(3%);
+}
+
+.crop-focus {
+  transform: scale(0.9) translateY(5%);
+}
+
+@media (max-width: 720px) {
+  .showcase {
+    grid-template-columns: 1fr;
+  }
+}
+
 .features {
   padding-block: clamp(48px, 8vw, 96px);
   border-top: 1px solid var(--border-subtle);

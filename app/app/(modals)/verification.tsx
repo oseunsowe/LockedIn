@@ -51,7 +51,14 @@ export default function VerificationModal() {
   function handleContinue() {
     const newLevel = profile?.level ?? levelBeforeRef.current;
     if (newLevel > levelBeforeRef.current) {
-      router.replace({ pathname: '/(modals)/level-up', params: { level: String(newLevel) } });
+      router.replace({
+        pathname: '/(modals)/level-up',
+        params: {
+          level: String(newLevel),
+          xpTotal: String(profile?.xp_total ?? 0),
+          streak: String(profile?.streak_count ?? 0),
+        },
+      });
     } else {
       router.dismissAll();
     }

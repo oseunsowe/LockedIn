@@ -1,4 +1,4 @@
-import { levelForXp, levelProgress, xpForLevel } from '../leveling';
+import { levelForXp, levelProgress, rankForLevel, xpForLevel } from '../leveling';
 
 // Mirrors supabase/migrations/20260901000009_level_curve.sql's `level_thresholds` table exactly —
 // both were generated from the same formula run. If this test ever fails after editing the curve
@@ -72,5 +72,24 @@ describe('levelProgress', () => {
     const progress = levelProgress(10_000_000);
     expect(progress.level).toBe(100);
     expect(progress.progress).toBe(1);
+  });
+});
+
+describe('rankForLevel', () => {
+  it('bands every 10 levels, starting at Initiate', () => {
+    expect(rankForLevel(1)).toBe('Initiate');
+    expect(rankForLevel(10)).toBe('Initiate');
+    expect(rankForLevel(11)).toBe('Operative');
+    expect(rankForLevel(20)).toBe('Operative');
+  });
+
+  it('reaches the top rank at the level-100 ceiling', () => {
+    expect(rankForLevel(92)).toBe('Legend');
+    expect(rankForLevel(100)).toBe('Legend');
+  });
+
+  it('clamps out-of-range input the same way xpForLevel does', () => {
+    expect(rankForLevel(0)).toBe(rankForLevel(1));
+    expect(rankForLevel(500)).toBe(rankForLevel(100));
   });
 });

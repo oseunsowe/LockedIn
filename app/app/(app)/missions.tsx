@@ -56,7 +56,17 @@ export default function MissionBoard() {
           { paddingTop: insets.top + space.lg, paddingBottom: insets.bottom + space.xxxl * 2 },
         ]}
       >
-        <Text style={styles.header}>Mission Board</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.header}>Mission Board</Text>
+          <Pressable
+            style={styles.timelineButton}
+            onPress={() => router.push('/(modals)/day-timeline')}
+            accessibilityRole="button"
+            accessibilityLabel="Day Timeline"
+          >
+            <Icon name="timeline" size={20} color={semantic.text.secondary} />
+          </Pressable>
+        </View>
 
         {missionsQuery.isPending ? (
           <ActivityIndicator color={palette.electric} style={styles.loading} />
@@ -179,9 +189,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.xl,
     gap: space.xl,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   header: {
     ...type.display,
     color: semantic.text.primary,
+  },
+  timelineButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: semantic.bg.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   loading: {
     marginTop: space.xxl,

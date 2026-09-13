@@ -47,3 +47,14 @@ export function computeElapsedProgress(createdAt: string, deadline: string | nul
 export function hoursFromNow(hours: number): string {
   return new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
 }
+
+/** Wall-clock time-of-day for a scheduled mission time block — e.g. "3:00 PM". Distinct from
+ * `formatTimeRemaining`: that's a relative countdown, this is the block's fixed clock position. */
+export function formatTimeOfDay(iso: string): string {
+  return new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+/** "3:00 PM – 4:30 PM" for a scheduled mission time block. */
+export function formatTimeRange(startIso: string, endIso: string): string {
+  return `${formatTimeOfDay(startIso)} – ${formatTimeOfDay(endIso)}`;
+}

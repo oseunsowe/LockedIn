@@ -58,6 +58,55 @@ function buildDeadlineOptions(): DeadlineOption[] {
   return options;
 }
 
+type DayOption = { key: 'today' | 'tomorrow'; label: string };
+
+function buildDayOptions(): DayOption[] {
+  return [
+    { key: 'today', label: 'Today' },
+    { key: 'tomorrow', label: 'Tomorrow' },
+  ];
+}
+
+/** Hourly chips, 6 AM–10 PM — a start-of-block picker without a native date-picker dependency,
+ * same "chips, not forms" principle as `buildDeadlineOptions` above. */
+function buildHourOptions(): { hour: number; label: string }[] {
+  const options: { hour: number; label: string }[] = [];
+  for (let hour = 6; hour <= 22; hour++) {
+    const reference = new Date();
+    reference.setHours(hour, 0, 0, 0);
+    options.push({
+      hour,
+      label: reference.toLocaleTimeString(undefined, { hour: 'numeric' }),
+    });
+  }
+  return options;
+}
+
+const TIME_BLOCK_DURATION_STEP = 15;
+const TIME_BLOCK_DURATION_MIN = 15;
+const TIME_BLOCK_DURATION_MAX = 240;
+
+function formatDuration(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const hours = minutes / 60;
+  return Number.isInteger(hours) ? `${hours}h` : `${Math.floor(hours)}h ${minutes % 60}m`;
+}
+
+/** Resolves the TIME BLOCK section's chip selections into real start/end ISO timestamps. */
+function resolveTimeBlock(
+  enabled: boolean,
+  dayKey: DayOption['key'],
+  hour: number,
+  durationMinutes: number,
+): { start_time: string | null; end_time: string | null } {
+  if (!enabled) return { start_time: null, end_time: null };
+  const start = new Date();
+  if (dayKey === 'tomorrow') start.setDate(start.getDate() + 1);
+  start.setHours(hour, 0, 0, 0);
+  const end = new Date(start.getTime() + durationMinutes * 60_000);
+  return { start_time: start.toISOString(), end_time: end.toISOString() };
+}
+
 const missionTypeMeta: Record<MissionType, { icon: IconName; label: string }> = {
   main: { icon: 'mainQuest', label: 'Main Quest' },
   side: { icon: 'side', label: 'Side Mission' },
@@ -88,6 +137,10 @@ export default function CreateMissionModal() {
   const [campaignKey, setCampaignKey] = useState<CampaignKey | null>(null);
   const [difficulty, setDifficulty] = useState<MissionDifficulty>('standard');
   const [deadlineKey, setDeadlineKey] = useState('tomorrow');
+  const [timeBlockEnabled, setTimeBlockEnabled] = useState(false);
+  const [timeBlockDay, setTimeBlockDay] = useState<DayOption['key']>('today');
+  const [timeBlockHour, setTimeBlockHour] = useState(9);
+  const [timeBlockDuration, setTimeBlockDuration] = useState(60);
   const [proofTypes, setProofTypes] = useState<ReadonlySet<ProofType>>(new Set());
   // `null` = "follow the difficulty's suggested reward"; a number once the user overrides it by
   // hand, at which point switching difficulty no longer clobbers a value they chose deliberately.
@@ -95,6 +148,8 @@ export default function CreateMissionModal() {
   const xpReward = customXp ?? defaultXpForDifficulty[difficulty];
 
   const deadlineOptions = useMemo(() => buildDeadlineOptions(), []);
+  const dayOptions = useMemo(() => buildDayOptions(), []);
+  const hourOptions = useMemo(() => buildHourOptions(), []);
 
   const goalOptions = (
     userCampaignsQuery.data && userCampaignsQuery.data.length > 0
@@ -116,6 +171,12 @@ export default function CreateMissionModal() {
   async function handleSubmit() {
     if (!canSubmit) return;
     const deadline = deadlineOptions.find((o) => o.key === deadlineKey)?.iso ?? null;
+    const timeBlock = resolveTimeBlock(
+      timeBlockEnabled,
+      timeBlockDay,
+      timeBlockHour,
+      timeBlockDuration,
+    );
     try {
       await createMission.mutateAsync({
         title: title.trim(),
@@ -125,6 +186,7 @@ export default function CreateMissionModal() {
         xp_reward: xpReward,
         proof_requirements: Array.from(proofTypes).map((t) => ({ type: t })),
         deadline,
+        ...timeBlock,
       });
       router.back();
     } catch {
@@ -306,6 +368,106 @@ export default function CreateMissionModal() {
               );
             })}
           </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>TIME BLOCK</Text>
+          <View style={styles.chipRow}>
+            <Pressable
+              style={[styles.chip, !timeBlockEnabled ? styles.chipSelected : null]}
+              onPress={() => setTimeBlockEnabled(false)}
+              accessibilityRole="button"
+              accessibilityLabel="No specific time"
+              accessibilityState={{ selected: !timeBlockEnabled }}
+            >
+              <Text style={[styles.chipLabel, !timeBlockEnabled ? styles.chipLabelSelected : null]}>
+                No specific time
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[styles.chip, timeBlockEnabled ? styles.chipSelected : null]}
+              onPress={() => setTimeBlockEnabled(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Schedule a block"
+              accessibilityState={{ selected: timeBlockEnabled }}
+            >
+              <Text style={[styles.chipLabel, timeBlockEnabled ? styles.chipLabelSelected : null]}>
+                Schedule a block
+              </Text>
+            </Pressable>
+          </View>
+
+          {timeBlockEnabled ? (
+            <>
+              <View style={styles.chipRow}>
+                {dayOptions.map((option) => {
+                  const selected = timeBlockDay === option.key;
+                  return (
+                    <Pressable
+                      key={option.key}
+                      style={[styles.chip, selected ? styles.chipSelected : null]}
+                      onPress={() => setTimeBlockDay(option.key)}
+                      accessibilityRole="button"
+                      accessibilityLabel={option.label}
+                      accessibilityState={{ selected }}
+                    >
+                      <Text style={[styles.chipLabel, selected ? styles.chipLabelSelected : null]}>
+                        {option.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <View style={styles.chipRow}>
+                {hourOptions.map((option) => {
+                  const selected = timeBlockHour === option.hour;
+                  return (
+                    <Pressable
+                      key={option.hour}
+                      style={[styles.chip, selected ? styles.chipSelected : null]}
+                      onPress={() => setTimeBlockHour(option.hour)}
+                      accessibilityRole="button"
+                      accessibilityLabel={option.label}
+                      accessibilityState={{ selected }}
+                    >
+                      <Text style={[styles.chipLabel, selected ? styles.chipLabelSelected : null]}>
+                        {option.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <View style={styles.stepper}>
+                <Pressable
+                  style={styles.stepperButton}
+                  onPress={() =>
+                    setTimeBlockDuration((d) =>
+                      Math.max(TIME_BLOCK_DURATION_MIN, d - TIME_BLOCK_DURATION_STEP),
+                    )
+                  }
+                  hitSlop={{ top: 2, bottom: 2, left: 2, right: 2 }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Decrease duration"
+                >
+                  <Text style={styles.stepperButtonLabel}>−</Text>
+                </Pressable>
+                <Text style={styles.stepperValue}>{formatDuration(timeBlockDuration)}</Text>
+                <Pressable
+                  style={styles.stepperButton}
+                  onPress={() =>
+                    setTimeBlockDuration((d) =>
+                      Math.min(TIME_BLOCK_DURATION_MAX, d + TIME_BLOCK_DURATION_STEP),
+                    )
+                  }
+                  hitSlop={{ top: 2, bottom: 2, left: 2, right: 2 }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Increase duration"
+                >
+                  <Text style={styles.stepperButtonLabel}>+</Text>
+                </Pressable>
+              </View>
+            </>
+          ) : null}
         </View>
 
         <View style={styles.section}>

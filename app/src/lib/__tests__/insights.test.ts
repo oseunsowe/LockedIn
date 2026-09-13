@@ -13,6 +13,8 @@ function makeMission(overrides: Partial<Mission> = {}): Mission {
     xp_reward: 100,
     proof_requirements: [],
     deadline: null,
+    start_time: null,
+    end_time: null,
     created_at: new Date().toISOString(),
     completed_at: null,
     ...overrides,

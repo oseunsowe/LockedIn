@@ -32,11 +32,30 @@ const typeMeta: Record<Mission['type'], { icon: IconName; label: string }> = {
  * that might call `expo-keep-awake` elsewhere later. */
 const FOCUS_MODE_TAG = 'active-mission-focus';
 
+/** Distraction categories shown in Focus Mode — generic categories, not real app names or logos
+ * (no OS-level blocking exists to back a "blocked apps" claim, see the module doc above), so this
+ * is framed honestly as a personal commitment checklist, not enforcement. */
+const FOCUS_COMMITMENTS: { icon: IconName; label: string }[] = [
+  { icon: 'socialFeed', label: 'Social feeds' },
+  { icon: 'shortVideo', label: 'Short video' },
+  { icon: 'messaging', label: 'Messaging' },
+];
+
+function formatFocusTime(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60)
+    .toString()
+    .padStart(2, '0');
+  const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+  return `${minutes}:${seconds}`;
+}
+
 /**
  * Active Mission Mode (TODO.md §7.3, `LockedIn.md` Screen 10). "Focus Mode" is scoped exactly as
- * the TODO calls for: an in-app immersive state (dimmed chrome + keep-awake), not OS-level Focus
- * integration or notification suppression — there's no notification system yet to suppress
- * (Phase 13), and true iOS Focus control is a native lift out of scope for MVP.
+ * the TODO calls for: an in-app immersive state (dimmed chrome + keep-awake) with a self-reported
+ * commitment checklist and session timer, not OS-level app blocking — real cross-app enforcement
+ * (Focus Enforcement, TODO.md §17.9) needs native `UsageStatsManager`/Family Controls work this
+ * environment can't build or test, so the distraction list here is framed honestly as something
+ * the user commits to, never as apps LockedIn is actually blocking.
  */
 export default function ActiveMissionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -45,6 +64,7 @@ export default function ActiveMissionScreen() {
   const missionQuery = useMission(id);
   const setMissionStatus = useSetMissionStatus(session?.user.id);
   const [focusActive, setFocusActive] = useState(false);
+  const [focusSeconds, setFocusSeconds] = useState(0);
   // Called unconditionally, before any early return below (Rules of Hooks) — `null` deadline is a
   // valid, handled input, so this is safe even before `missionQuery.data` exists.
   const countdown = useCountdown(missionQuery.data?.deadline ?? null);
@@ -55,6 +75,15 @@ export default function ActiveMissionScreen() {
       void deactivateKeepAwake(FOCUS_MODE_TAG);
     };
   }, []);
+
+  // Ticks the in-session focus timer. Purely a local, ephemeral display (no `focus_sessions` table
+  // exists yet to persist this — see TODO.md §17.5's "Focus timer evidence" gap) — it resets to
+  // zero every time Focus Mode is toggled back on rather than claiming a history it doesn't have.
+  useEffect(() => {
+    if (!focusActive) return;
+    const interval = setInterval(() => setFocusSeconds((seconds) => seconds + 1), 1000);
+    return () => clearInterval(interval);
+  }, [focusActive]);
 
   async function handleActivateRecovery() {
     if (!id) return;
@@ -74,6 +103,7 @@ export default function ActiveMissionScreen() {
     if (focusActive) {
       await deactivateKeepAwake(FOCUS_MODE_TAG);
       setFocusActive(false);
+      setFocusSeconds(0);
     } else {
       await activateKeepAwakeAsync(FOCUS_MODE_TAG);
       setFocusActive(true);
@@ -135,6 +165,24 @@ export default function ActiveMissionScreen() {
         <Text style={[styles.difficultyLabel, { color: difficulty.color }]}>
           {difficulty.label} Difficulty
         </Text>
+
+        {focusActive ? (
+          <View style={styles.focusCard}>
+            <Text style={styles.focusTimer}>{formatFocusTime(focusSeconds)}</Text>
+            <Text style={styles.focusTimerLabel}>FOCUS SESSION</Text>
+            <View style={styles.focusChipsRow}>
+              {FOCUS_COMMITMENTS.map((commitment) => (
+                <View key={commitment.icon} style={styles.focusChip}>
+                  <Icon name={commitment.icon} size={16} color={palette.gold} />
+                  <Text style={styles.focusChipLabel}>{commitment.label}</Text>
+                </View>
+              ))}
+            </View>
+            <Text style={styles.focusHint}>
+              Your commitment &mdash; stay off these until you submit proof.
+            </Text>
+          </View>
+        ) : null}
 
         {countdown ? (
           <View style={styles.timerBlock}>
@@ -316,6 +364,54 @@ const styles = StyleSheet.create({
   noDeadline: {
     ...type.body,
     color: semantic.text.secondary,
+  },
+  focusCard: {
+    width: '100%',
+    marginTop: space.lg,
+    alignItems: 'center',
+    gap: space.sm,
+    padding: space.lg,
+    borderRadius: radius.card,
+    backgroundColor: withAlpha(palette.gold, 0.08),
+    borderWidth: 1,
+    borderColor: withAlpha(palette.gold, 0.3),
+  },
+  focusTimer: {
+    fontFamily: fontFamily.monoSemiBold,
+    fontSize: 40,
+    color: palette.gold,
+  },
+  focusTimerLabel: {
+    ...type.data,
+    color: semantic.text.tertiary,
+  },
+  focusChipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: space.sm,
+    marginTop: space.sm,
+  },
+  focusChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.xs,
+    paddingVertical: space.xs,
+    paddingHorizontal: space.sm,
+    borderRadius: radius.pill,
+    backgroundColor: semantic.bg.canvas,
+    borderWidth: 1,
+    borderColor: withAlpha(palette.gold, 0.25),
+  },
+  focusChipLabel: {
+    ...type.caption,
+    color: semantic.text.primary,
+  },
+  focusHint: {
+    ...type.caption,
+    color: semantic.text.secondary,
+    textAlign: 'center',
+    marginTop: space.xs,
   },
   recoveryCard: {
     width: '100%',
