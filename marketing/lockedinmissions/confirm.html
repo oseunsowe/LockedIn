@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Confirm your email — LockedIn</title>
+    <link rel="icon" type="image/png" href="./assets/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Inter:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+    <main class="status-page">
+      <a class="wordmark" href="/">Locked<span class="wordmark-in">In</span></a>
+      <div id="status-icon" class="status-icon">&hellip;</div>
+      <h1 id="status-title" class="status-title">Confirming your email&hellip;</h1>
+      <p id="status-body" class="status-body">One moment.</p>
+      <a class="btn btn-primary btn-large" href="/">Back to LockedIn</a>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script>
+      const client = window.supabase.createClient(
+        'https://usqukqpgwexwjiglhpdj.supabase.co',
+        'sb_publishable_prtebrryT7htgxbglRYNgA_nxDZM3-k',
+      );
+      const token = new URLSearchParams(window.location.search).get('token');
+      const icon = document.getElementById('status-icon');
+      const title = document.getElementById('status-title');
+      const bodyEl = document.getElementById('status-body');
+
+      async function run() {
+        if (!token) {
+          icon.textContent = '!';
+          title.textContent = 'Missing confirmation link';
+          bodyEl.textContent = 'This link looks incomplete. Check the link in your email again.';
+          return;
+        }
+        const { data, error } = await client.functions.invoke('confirm-waitlist', {
+          body: { token },
+        });
+        if (error || !data?.success) {
+          icon.textContent = '!';
+          title.textContent = "Couldn't confirm your email";
+          bodyEl.textContent = 'Try clicking the link from your email again in a moment.';
+          return;
+        }
+        icon.textContent = '✓';
+        title.textContent = "You're confirmed!";
+        bodyEl.textContent = "We'll email you the moment LockedIn launches on Google Play.";
+      }
+      run();
+    </script>
+  </body>
+</html>

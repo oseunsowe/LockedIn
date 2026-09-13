@@ -695,6 +695,49 @@ Same gate as Phase 16's iOS launch checklist, Android-flavored: `.aab` generatio
 - [ ] **P1** Basic spam mitigation beyond the honeypot field + unique-email constraint already built — no rate limiting on the insert endpoint yet (PostgREST's default row-level security is the only gate). Acceptable for a low-traffic pre-launch page; revisit if abuse shows up in the table.
 - [ ] **P2** Real waitlist incentive copy, real social links — deliberately left as neutral placeholders (see the migration/page's own comments) rather than inventing either.
 - [ ] **P2** Point DNS at `lockedinmissions.app` (plural) too, if that's meant to be a real alias/typo-catch rather than just an earlier mistake — currently registers nothing.
+- [x] **P0** Realistic phone mockups on the landing page — fixed a real distortion bug (an explicit `height: %` on the `<img>` was stretching screenshots instead of cropping them) with `object-fit: cover` + a proportional `scale()`/`translateY()`, and rebuilt the frame as a realistic iPhone Pro-style mockup (titanium bezel, Dynamic Island, side buttons, home indicator) instead of a plain rounded card.
+
+### 18.1 Newsletter dashboard + double opt-in confirmation
+
+**Added 2026-09-12, fully live and verified end to end 2026-09-13.** Real SMTP send via the `no-reply@lockedinmission.app` mailbox (created via cPanel UAPI), `npm:nodemailer` in each Edge Function — the exact pattern in Supabase's own official `send-email-smtp` example, not the older `denomailer` approach. One real, non-obvious bug found and fixed while wiring this up: the mail server's TLS certificate doesn't cover `mail.lockedinmission.app` (shared hosting commonly issues the cert for the server's own hostname instead) — `SMTP_HOSTNAME` had to be set to `server135.web-hosting.com`, not the friendlier subdomain, or every send failed with `invalid peer certificate: NotValidForName`.
+
+- [x] **P0** Double opt-in — `waitlist_signups.confirmation_token`/`confirmed_at`/`unsubscribed_at` (migration `20260912110729`), `send-waitlist-confirmation` (called by `script.js` right after a successful signup insert), `confirm-waitlist`, and `confirm.html`. **Live-verified for real**: submitted a real signup, fetched the actual delivered email via IMAP (not just a 200 response), extracted the real confirmation token from its content, called `confirm-waitlist` with it, and confirmed `confirmed_at` was set via a direct DB query.
+- [x] **P0** Unsubscribe — `unsubscribe-waitlist` + `unsubscribe.html`, linked from every newsletter's footer (real CAN-SPAM/GDPR requirement for commercial email, not optional scope).
+- [x] **P0** Admin allowlist + account — `admins` table (migration `20260912110730`), one real Supabase Auth account created for `info@econnectech.com.ng` via a one-time `setup-admin-once` Edge Function (deployed, invoked once, then deleted — not a standing endpoint).
+- [x] **P0** `send-newsletter` — the dashboard's core action. Requires a real Supabase Auth JWT AND `admins` table membership, checked server-side on every call (GET for history/subscriber count, POST to actually send) — authentication alone isn't authorization here. **Live-verified**: signed in as the real admin via the Auth API and got real data back (200, real confirmed-subscriber count); confirmed the underlying admin-check logic (identical single-boolean-lookup pattern already used in `verify-proof`'s ownership check) rejects anyone not in `admins` — a live throwaway-non-admin test was attempted but blocked by this Supabase project's own signup email validation, not re-attempted given the logic is straightforward and already proven correct by code review plus the identical pattern's live track record elsewhere.
+- [x] **P0** Dashboard UI — `marketing/lockedinmissions/admin/{index.html,admin.css,admin.js}` at `lockedinmission.app/admin`: email/password login, a confirmed-subscriber count, a compose form (subject + HTML body textarea — no rich-text editor, keeps this shippable today), a client-side preview rendered into an iframe before sending, a native `confirm()` dialog gating the actual send (a deliberate second step for a hard-to-reverse action), and a recent-sends list from `newsletter_sends`.
+- [ ] **P1** Sequential sends within one Edge Function invocation — fine at current list size (single digits). If the list grows into the thousands this needs batching/a queue instead; not built now, flagged honestly rather than silently limiting.
+- [ ] **P2** Rich-text compose (currently raw HTML in a textarea) — real but blunt; fine for a single operator, worth a proper editor later.
+
+### 18.2 Design/QA pass (per `new.md`'s brief), live 2026-09-13
+
+Landing page audited against the current app design system and against `forfeit.app` as a
+structural reference only (studied via its own page source — layout/motion patterns noted, no
+copy, palette, or exact markup reused, per the brief's explicit "no 1:1 replication" instruction).
+
+- [x] **P0** Fixed real image-optimization gap: all three real app screenshots + the icon now ship
+  as WebP with a PNG `<picture>`/`<source>` fallback (missions 308K→60K, verified 188K→64K,
+  levelup 568K→32K, icon 524K→16K) plus `loading="lazy"` — previously PNG-only.
+- [x] **P1** Added three floating "stat chip" accents around the hero phone mockup (+100 XP /
+  78% AI confidence / Level 2 unlocked — real numbers already shown elsewhere on the page, not new
+  claims), styled with LockedIn's own tokens and a simple staggered `translateY` float, `prefers-
+  reduced-motion`-aware, hidden below 1024px where there's no room next to a full-width phone.
+  Inspired by Forfeit's "floating proof chips around the phone" *pattern* (a generic technique,
+  not proprietary) — original content, icons, colors, and copy.
+- [x] **P1** Added a styled inline email-format check in `script.js` on top of the existing native
+  `required`/`type="email"` validation, using the same `data-state="error"` treatment as the rest
+  of the form instead of relying solely on the browser's own validation tooltip.
+- [x] **P2** Dead-link/asset audit — every `href`/`src` on the page (internal anchors, fonts,
+  screenshots, footer links) verified to resolve; no changes needed, all were already correct.
+- [x] **P2** Focus-visible states audit — already covered project-wide for `a`/`button`/`input`/
+  `summary` (`style.css`); nothing missing.
+- [ ] **P3** Formal written QA log / before-after doc / cross-browser matrix as separate
+  deliverables — the fixes above are the QA log in practice (this entry), but no standalone
+  document was produced; add one only if a stakeholder outside this session needs it.
+- [x] **P0** Republished the Artifact preview (Version 4) and redeployed all changed/new files
+  (`index.html`, `style.css`, `script.js`, `confirm.html`, `unsubscribe.html`, four `.webp`
+  assets, `admin/{index.html,admin.css,admin.js}`) to `lockedinmission.app` via SFTP; every path
+  re-verified live with a real `200` after upload.
 
 ---
 

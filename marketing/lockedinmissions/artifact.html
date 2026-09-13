@@ -1,11 +1,15 @@
-<title>LockedIn Waitlist</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link
-  href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap"
-  rel="stylesheet"
-/>
-<link rel="stylesheet" href="style.css" />
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LockedIn — Become the person you promised yourself you would become.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
     <div class="noise" aria-hidden="true"></div>
 
@@ -74,18 +78,55 @@
         </div>
 
         <div class="hero-phone" aria-hidden="true">
-          <div class="phone-mockup">
-            <div class="phone-screen">
-              <div class="phone-notch" aria-hidden="true"></div>
-              <div class="phone-home-indicator" aria-hidden="true"></div>
-              <img
-                src="./assets/screenshot-missions.png"
-                alt=""
-                class="phone-screen-img crop-missions"
-              />
+          <div class="phone-stage">
+            <div class="phone-mockup">
+              <div class="phone-screen">
+                <div class="phone-notch" aria-hidden="true"></div>
+                <div class="phone-home-indicator" aria-hidden="true"></div>
+                <picture>
+                  <source srcset="./assets/screenshot-missions.webp" type="image/webp" />
+                  <img
+                    src="./assets/screenshot-missions.png"
+                    alt=""
+                    class="phone-screen-img crop-missions"
+                  />
+                </picture>
+              </div>
+            </div>
+
+            <!-- Floating stat chips — real LockedIn numbers (the same verified mission and
+                 level-up shown elsewhere on this page), not live/your-data claims. A gamified,
+                 motion-driven echo of the "proof signals around the phone" pattern common to this
+                 product category, built with LockedIn's own tokens and data, not copied markup. -->
+            <div class="hero-chip hero-chip-1">
+              <span class="hero-chip-icon hero-chip-icon-gold">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></svg>
+              </span>
+              <span class="hero-chip-text">
+                <strong>+100 XP</strong>
+                <span>mission verified</span>
+              </span>
+            </div>
+            <div class="hero-chip hero-chip-2">
+              <span class="hero-chip-icon hero-chip-icon-electric">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/></svg>
+              </span>
+              <span class="hero-chip-text">
+                <strong>78%</strong>
+                <span>AI confidence</span>
+              </span>
+            </div>
+            <div class="hero-chip hero-chip-3">
+              <span class="hero-chip-icon hero-chip-icon-violet">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></svg>
+              </span>
+              <span class="hero-chip-text">
+                <strong>Level 2</strong>
+                <span>unlocked</span>
+              </span>
             </div>
           </div>
-          <p class="hero-phone-caption">The real Mission Board &mdash; live in the app today.</p>
+          <p class="hero-phone-caption">Real screens from the app &mdash; not mockups.</p>
         </div>
       </section>
 
@@ -169,11 +210,15 @@
             <div class="phone-screen">
               <div class="phone-notch" aria-hidden="true"></div>
               <div class="phone-home-indicator" aria-hidden="true"></div>
-              <img
-                src="./assets/screenshot-verified.png"
-                alt="Real LockedIn screen: Mission Verified, 78% confidence, with Claude's written reasoning and a plus 100 XP reward"
-                class="phone-screen-img crop-verified"
-              />
+              <picture>
+                <source srcset="./assets/screenshot-verified.webp" type="image/webp" />
+                <img
+                  src="./assets/screenshot-verified.png"
+                  alt="Real LockedIn screen: Mission Verified, 78% confidence, with Claude's written reasoning and a plus 100 XP reward"
+                  class="phone-screen-img crop-verified"
+                  loading="lazy"
+                />
+              </picture>
             </div>
           </div>
         </div>
@@ -201,11 +246,15 @@
           <div class="phone-screen">
             <div class="phone-notch" aria-hidden="true"></div>
             <div class="phone-home-indicator" aria-hidden="true"></div>
-            <img
-              src="./assets/screenshot-levelup.png"
-              alt="Real LockedIn screen: Level 2 Unlocked celebration"
-              class="phone-screen-img crop-levelup"
-            />
+            <picture>
+              <source srcset="./assets/screenshot-levelup.webp" type="image/webp" />
+              <img
+                src="./assets/screenshot-levelup.png"
+                alt="Real LockedIn screen: Level 2 Unlocked celebration"
+                class="phone-screen-img crop-levelup"
+                loading="lazy"
+              />
+            </picture>
           </div>
         </div>
         <div class="levelup-copy">
@@ -345,3 +394,5 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script src="./script.js"></script>
   
+</body>
+</html>

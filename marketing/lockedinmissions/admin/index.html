@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Newsletter Dashboard — LockedIn</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="./admin.css" />
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+
+    <!-- Login gate -->
+    <main id="login-view" class="login-view">
+      <a class="wordmark" href="../">Locked<span class="wordmark-in">In</span></a>
+      <h1 class="page-title">Newsletter Dashboard</h1>
+      <form id="login-form" class="login-form" novalidate>
+        <label class="field-label" for="login-email">Email</label>
+        <input id="login-email" type="email" required autocomplete="username" />
+        <label class="field-label" for="login-password">Password</label>
+        <input id="login-password" type="password" required autocomplete="current-password" />
+        <button type="submit" class="btn btn-primary">Sign In</button>
+        <p id="login-status" class="status-text" role="status" aria-live="polite"></p>
+      </form>
+    </main>
+
+    <!-- Dashboard (hidden until an admin session is confirmed) -->
+    <main id="dashboard-view" class="dashboard-view" hidden>
+      <header class="dashboard-header">
+        <a class="wordmark" href="../">Locked<span class="wordmark-in">In</span></a>
+        <button id="sign-out" class="btn btn-ghost">Sign Out</button>
+      </header>
+
+      <section class="stat-row">
+        <div class="stat-card">
+          <span class="stat-num" id="subscriber-count">&mdash;</span>
+          <span class="stat-label">confirmed subscribers</span>
+        </div>
+      </section>
+
+      <section class="compose-section">
+        <h2 class="section-heading">Compose</h2>
+        <label class="field-label" for="subject">Subject</label>
+        <input id="subject" type="text" placeholder="What's new at LockedIn" />
+
+        <label class="field-label" for="body-html">Body (HTML)</label>
+        <textarea
+          id="body-html"
+          rows="10"
+          placeholder="<p>Hey there,</p><p>Here's what shipped this week...</p>"
+        ></textarea>
+
+        <div class="compose-actions">
+          <button id="preview-btn" class="btn btn-ghost">Preview</button>
+          <button id="send-btn" class="btn btn-primary">Send Newsletter</button>
+        </div>
+        <p id="compose-status" class="status-text" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="preview-section" id="preview-section" hidden>
+        <h2 class="section-heading">Preview</h2>
+        <iframe id="preview-frame" class="preview-frame" title="Email preview"></iframe>
+      </section>
+
+      <section class="history-section">
+        <h2 class="section-heading">Recent Sends</h2>
+        <div id="history-list" class="history-list">
+          <p class="status-text">Loading&hellip;</p>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="./admin.js"></script>
+  </body>
+</html>

@@ -32,3 +32,6 @@ yarn-error.log*
 log.md
 claudeapi.md
 CPANEL.md
+
+# Third-party site source used only as a local design reference — not ours to redistribute
+reference.md
