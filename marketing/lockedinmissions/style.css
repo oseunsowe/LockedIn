@@ -2,6 +2,13 @@
    Single deliberate dark world, matching the shipped app's userInterfaceStyle: "dark" — not an
    omission, a choice already made for this brand. */
 
+/* The `hidden` attribute's UA-stylesheet `display: none` loses to any author rule that sets
+   `display` on the same element (equal specificity, author origin wins) — every class here that
+   sets `display` on a toggleable element silently defeated `[hidden]` without this. */
+[hidden] {
+  display: none !important;
+}
+
 :root {
   --void: #050508;
   --obsidian: #0f0f1e;
@@ -1146,4 +1153,26 @@ main {
   color: var(--text-secondary);
   max-width: 40ch;
   margin: 0 0 12px;
+}
+
+.status-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 340px;
+}
+
+.status-form input {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--pure);
+  background: var(--obsidian);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  padding: 14px 20px;
+}
+
+.status-form input::placeholder {
+  color: var(--text-tertiary);
 }
