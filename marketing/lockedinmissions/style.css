@@ -419,15 +419,15 @@ main {
    a stray back-navigation label at the very top of the source capture and an unrelated
    accessibility bubble near the bottom — proportional zoom+pan only, never a stretch. */
 .crop-missions {
-  transform: scale(1.16) translateY(-5%);
+  transform: scale(0.94) translateY(4%);
 }
 
 .crop-verified {
-  transform: scale(1.32) translateY(-4%);
+  transform: scale(1) translateY(4%);
 }
 
 .crop-levelup {
-  transform: scale(1.4) translateY(-9%);
+  transform: scale(0.96) translateY(3%);
 }
 
 .facts-strip {
