@@ -189,8 +189,8 @@ main {
   position: absolute;
   top: -120px;
   left: -160px;
-  width: 560px;
-  height: 560px;
+  width: clamp(320px, 80vw, 560px);
+  height: clamp(320px, 80vw, 560px);
   background: radial-gradient(circle, color-mix(in srgb, var(--violet) 35%, transparent), transparent 70%);
   filter: blur(10px);
   z-index: -1;
@@ -994,6 +994,14 @@ main {
 
   .waitlist-row {
     flex-direction: column;
+  }
+
+  /* `#email`'s `flex: 1 1 240px` sets flex-basis: 240px, which governs the MAIN axis — width in
+     the default row layout above, but height once `.waitlist-row` switches to column here. Reset
+     it explicitly or the input renders as a 240px-tall box instead of a normal single-line field. */
+  #email {
+    flex-basis: auto;
+    width: 100%;
   }
 
   .waitlist-row .btn {

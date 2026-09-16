@@ -155,16 +155,25 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 14px 18px;
   border-radius: 12px;
   background: var(--obsidian);
   border: 1px solid var(--border-subtle);
 }
 
+/* The subject/meta wrapper has no class of its own in admin.js's markup — target it structurally.
+   Flex children default to min-width: auto (content-based), so an unbounded admin-typed subject
+   line would otherwise force this row wider than its container on narrow screens. */
+.history-row > div {
+  min-width: 0;
+}
+
 .history-subject {
   margin: 0 0 2px;
   font-weight: 600;
   color: var(--pure);
+  overflow-wrap: break-word;
 }
 
 .history-meta {
