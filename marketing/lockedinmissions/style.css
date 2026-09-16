@@ -214,117 +214,14 @@ main {
   max-width: 240px;
 }
 
-/* Stage wraps the phone mockup so the floating stat chips can be positioned relative to it
-   without disturbing the phone's own layout box. Chips are hidden below the tablet breakpoint —
-   there isn't room next to a full-width stacked phone, and the caption/copy already carry the
-   same numbers. */
-.phone-stage {
-  position: relative;
-}
-
-.hero-chip {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 16px 10px 10px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--obsidian) 92%, transparent);
-  border: 1px solid var(--border-subtle);
-  box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  animation: hero-chip-float 6s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.hero-chip-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.hero-chip-icon svg {
-  width: 15px;
-  height: 15px;
-}
-
-.hero-chip-icon-gold {
-  background: color-mix(in srgb, var(--gold) 18%, transparent);
-  color: var(--gold);
-}
-
-.hero-chip-icon-electric {
-  background: color-mix(in srgb, var(--electric) 18%, transparent);
-  color: var(--electric);
-}
-
-.hero-chip-icon-violet {
-  background: color-mix(in srgb, var(--violet) 18%, transparent);
-  color: var(--iris);
-}
-
-.hero-chip-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.25;
-  white-space: nowrap;
-}
-
-.hero-chip-text strong {
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--pure);
-}
-
-.hero-chip-text span {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.02em;
-  color: var(--text-tertiary);
-}
-
-.hero-chip-1 {
-  top: 8%;
-  right: -8%;
-  animation-delay: 0s;
-}
-
-.hero-chip-2 {
-  top: 46%;
-  left: -14%;
-  animation-delay: 1.8s;
-}
-
-.hero-chip-3 {
-  bottom: 6%;
-  right: -6%;
-  animation-delay: 3.4s;
-}
-
-@keyframes hero-chip-float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-@media (max-width: 1024px) {
-  .hero-chip {
-    display: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-chip {
-    animation: none;
-  }
+/* The device frame, screenshot, and floating stat chips are baked into one flattened image now
+   (real LockedIn numbers — the same verified mission and level-up shown elsewhere on this page —
+   not live/your-data claims) rather than built from separate CSS layers. */
+.hero-mockup-img {
+  width: min(320px, 78vw);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 40px 90px rgba(0, 0, 0, 0.6));
 }
 
 /* Phone mockup — a realistic iPhone Pro-style frame (titanium bezel, Dynamic Island, side
@@ -425,10 +322,6 @@ main {
 /* Each crop scales up and pans to frame the real app content, cropping out the OS status bar /
    a stray back-navigation label at the very top of the source capture and an unrelated
    accessibility bubble near the bottom — proportional zoom+pan only, never a stretch. */
-.crop-missions {
-  transform: scale(0.94) translateY(4%);
-}
-
 .crop-verified {
   transform: scale(1) translateY(4%);
 }
