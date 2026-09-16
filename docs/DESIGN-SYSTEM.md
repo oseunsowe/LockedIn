@@ -1,3 +1,26 @@
+> ⚠️ **PARTIALLY SUPERSEDED — read [`../TODO.md`](../TODO.md) §0 first.**
+>
+> This document is authoritative for **design philosophy, component intent, screen architecture, and product rules**
+> (the "one dominant mission" decision, the "Recovery Mode / no shame" rule, the animation system).
+>
+> It is **NOT** authoritative for **token values**. The colour hexes in §2 predate the brand board in
+> [`../assets/`](../assets) and are superseded by it. Do not copy them:
+>
+> | | ❌ Stale (below) | ✅ Authoritative (brand board) |
+> |---|---|---|
+> | Background | `#07090D` | `#050508` (Void) |
+> | Surface | `#11151C` | `#0F0F1E` (Obsidian) |
+> | Primary | `#635BFF` | `#6366F1` (Electric) |
+> | Gold | `#FFC857` | `#D4AF37` (Gold) |
+>
+> Typography is also superseded: the brand board specifies **Outfit** (display) / **Inter** (body) /
+> **JetBrains Mono** (data labels), not "SF Pro Display / Inter".
+>
+> The emoji used below as UI elements (🔥 📸 🎤 💻 🏆 ⚡) are **illustrative only** — ship Lucide icons
+> instead, per `TODO.md` §2.
+
+---
+
 I researched free/open-source Figma and design-system resources that can accelerate a production-quality LockedIn design system. I would **not copy existing kits directly**; we should use them as foundations and build a proprietary design language on top.
 
 Useful foundations:

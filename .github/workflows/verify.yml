@@ -1,0 +1,32 @@
+name: verify
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        # --legacy-peer-deps: expo-router's own dependency tree (@expo/ui pulling in
+        # web-only radix/vaul packages with conflicting react-dom peer requirements) doesn't
+        # resolve under npm's default strict peer resolution. The committed lockfile was
+        # generated with this flag, so `npm ci` must use it too — verified locally: plain
+        # `npm ci` resolves a different tree (missing react-dom and several others) and fails.
+        run: npm ci --legacy-peer-deps
+
+      - name: Verify (typecheck, lint, format, tests)
+        run: npm run verify

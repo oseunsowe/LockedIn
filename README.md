@@ -4,15 +4,24 @@ LockedIn is a premium, gamified daily-mission and accountability app — think A
 
 ## Repo contents
 
-- [`LockedIn.md`](LockedIn.md) — high-fidelity UI generation prompts for every screen (onboarding, dashboard, mission board, proof submission, AI verification, pricing, etc.) plus the global design direction.
-- [`todo.md`](todo.md) — design system notes: design tokens (colors, typography), core components (mission card, XP ring, avatar, AI companion, achievement badges), animation system, screen architecture, and recommended build order.
-- [`assets/`](assets) — reference screenshots and onboarding mockups.
+- [`TODO.md`](TODO.md) — **the execution plan.** Phased road to MVP with scope cuts, gates, risks and milestones. Start here.
+- [`LockedIn.md`](LockedIn.md) — high-fidelity UI generation prompts for every screen (onboarding, dashboard, mission board, proof submission, AI verification, pricing, etc.) plus the global design direction. Spec authority for screens with no mockup.
+- [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) — design philosophy, component intent, animation system and product rules. Token values in it are superseded by the brand board (see `TODO.md` §0).
+- [`assets/`](assets) — brand board (palette, typography, logo lockups, app icon sizes) and onboarding mockups.
 
-- [`app/`](app) — the LockedIn mobile app, scaffolded with [Expo](https://expo.dev) (React Native + TypeScript).
+- [`app/`](app) — the LockedIn mobile app, scaffolded with [Expo](https://expo.dev) SDK 57 (React Native 0.86 + TypeScript).
+
+## Brand
+
+| Void      | Obsidian  | Electric  | Violet    | Iris      | Gold      | Pure      |
+| --------- | --------- | --------- | --------- | --------- | --------- | --------- |
+| `#050508` | `#0F0F1E` | `#6366F1` | `#8B5CF6` | `#A78BFA` | `#D4AF37` | `#FFFFFF` |
+
+Outfit (display) · Inter (body) · JetBrains Mono (data labels)
 
 ## Status
 
-Scaffolding stage — Expo/React Native app initialized, screens not yet built.
+Scaffolding stage — Expo/React Native app initialized, screens not yet built. See [`TODO.md`](TODO.md) for what's next.
 
 ## Developing in Codespaces
 
