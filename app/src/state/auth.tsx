@@ -110,10 +110,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (!credential.identityToken) {
             return { error: 'Apple did not return an identity token.' };
           }
-          const { error } = await supabase.auth.signInWithIdToken({
+          const { data, error } = await supabase.auth.signInWithIdToken({
             provider: 'apple',
             token: credential.identityToken,
           });
+          // Apple only ever returns `fullName` on the user's very first authorization for this
+          // app — never again on subsequent sign-ins — so it has to be captured and saved right
+          // here or it's gone for good, well before the onboarding draft's own name field (which
+          // this bypasses entirely) ever comes into play.
+          const givenName = credential.fullName?.givenName?.trim();
+          if (!error && data.user && givenName) {
+            await supabase
+              .from('profiles')
+              .update({ display_name: givenName })
+              .eq('id', data.user.id)
+              .is('display_name', null);
+          }
           return { error: error?.message ?? null };
         } catch (err) {
           if (
@@ -151,10 +163,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (!idToken) {
             return { error: 'Google did not return an identity token.' };
           }
-          const { error } = await supabase.auth.signInWithIdToken({
+          const { data, error } = await supabase.auth.signInWithIdToken({
             provider: 'google',
             token: idToken,
           });
+          const givenName =
+            response.data.user.givenName?.trim() || response.data.user.name?.split(' ')[0]?.trim();
+          if (!error && data.user && givenName) {
+            await supabase
+              .from('profiles')
+              .update({ display_name: givenName })
+              .eq('id', data.user.id)
+              .is('display_name', null);
+          }
           return { error: error?.message ?? null };
         } catch (err) {
           return { error: err instanceof Error ? err.message : 'Google sign-in failed.' };

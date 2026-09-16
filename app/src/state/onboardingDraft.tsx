@@ -8,6 +8,8 @@ type OnboardingDraftState = {
   setIdentityClass: (identityClass: IdentityClass) => void;
   selectedCampaigns: Set<CampaignKey>;
   toggleCampaign: (key: CampaignKey) => void;
+  displayName: string;
+  setDisplayName: (displayName: string) => void;
 };
 
 /**
@@ -21,6 +23,7 @@ const OnboardingDraftContext = createContext<OnboardingDraftState | null>(null);
 export function OnboardingDraftProvider({ children }: { children: ReactNode }) {
   const [identityClass, setIdentityClass] = useState<IdentityClass | null>(null);
   const [selectedCampaigns, setSelectedCampaigns] = useState<Set<CampaignKey>>(new Set());
+  const [displayName, setDisplayName] = useState('');
 
   const value = useMemo<OnboardingDraftState>(
     () => ({
@@ -38,8 +41,10 @@ export function OnboardingDraftProvider({ children }: { children: ReactNode }) {
           return next;
         });
       },
+      displayName,
+      setDisplayName,
     }),
-    [identityClass, selectedCampaigns],
+    [identityClass, selectedCampaigns, displayName],
   );
 
   return (

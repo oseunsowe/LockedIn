@@ -22,7 +22,7 @@ export default function Auth() {
   const insets = useSafeAreaInsets();
   const { signInWithApple, signInWithGoogle, signInWithEmail, signUpWithEmail, session } =
     useAuth();
-  const { identityClass, selectedCampaigns } = useOnboardingDraft();
+  const { identityClass, selectedCampaigns, displayName, setDisplayName } = useOnboardingDraft();
 
   const [appleAvailable, setAppleAvailable] = useState(false);
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signUp');
@@ -46,8 +46,15 @@ export default function Auth() {
       if (!session) return;
       const userId = session.user.id;
 
-      if (identityClass) {
-        await supabase.from('profiles').update({ identity_class: identityClass }).eq('id', userId);
+      const trimmedName = displayName.trim();
+      if (identityClass || trimmedName) {
+        await supabase
+          .from('profiles')
+          .update({
+            ...(identityClass ? { identity_class: identityClass } : {}),
+            ...(trimmedName ? { display_name: trimmedName } : {}),
+          })
+          .eq('id', userId);
       }
       if (selectedCampaigns.size > 0) {
         await supabase.from('user_campaigns').insert(
@@ -71,7 +78,7 @@ export default function Auth() {
     return () => {
       cancelled = true;
     };
-  }, [session, identityClass, selectedCampaigns]);
+  }, [session, identityClass, selectedCampaigns, displayName]);
 
   async function handleApple() {
     setError(null);
@@ -136,6 +143,17 @@ export default function Auth() {
           <View style={styles.dividerLine} />
         </View>
 
+        {mode === 'signUp' ? (
+          <TextInput
+            style={styles.input}
+            placeholder="First name"
+            placeholderTextColor={semantic.text.tertiary}
+            autoCapitalize="words"
+            value={displayName}
+            onChangeText={setDisplayName}
+          />
+        ) : null}
+
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -159,10 +177,12 @@ export default function Auth() {
         <Pressable
           style={styles.submitButton}
           onPress={handleEmailSubmit}
-          disabled={submitting}
+          disabled={submitting || (mode === 'signUp' && !displayName.trim())}
           accessibilityRole="button"
           accessibilityLabel={mode === 'signUp' ? 'Create account' : 'Sign in'}
-          accessibilityState={{ disabled: submitting }}
+          accessibilityState={{
+            disabled: submitting || (mode === 'signUp' && !displayName.trim()),
+          }}
         >
           <Text style={styles.submitLabel}>
             {submitting ? 'Please wait…' : mode === 'signUp' ? 'Create Account' : 'Sign In'}
