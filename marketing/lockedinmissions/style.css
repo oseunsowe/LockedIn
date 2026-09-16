@@ -132,7 +132,24 @@ main,
   border: none;
   cursor: pointer;
   border-radius: 999px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn-primary {
@@ -145,9 +162,26 @@ main,
   transform: translateY(-1px);
 }
 
+.btn-primary:hover svg {
+  transform: translateX(2px);
+}
+
+.btn-primary:disabled:hover {
+  transform: none;
+}
+
+.btn-primary:disabled:hover svg {
+  transform: none;
+}
+
 .btn-small {
   padding: 10px 20px;
   font-size: 14px;
+}
+
+.btn-small svg {
+  width: 14px;
+  height: 14px;
 }
 
 .btn-large {
