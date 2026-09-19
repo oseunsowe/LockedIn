@@ -23,12 +23,28 @@ type AuthState = {
 
 const AuthContext = createContext<AuthState | null>(null);
 
+function fetchProfile(userId: string) {
+  return supabase.from('profiles').select('*').eq('id', userId).single();
+}
+
+function isJwtClockSkew(error: { code?: string; message: string } | null) {
+  return error?.code === 'PGRST303' || /JWT issued at future/i.test(error?.message ?? '');
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [profile, setProfile] = useState<Profile | null>(null);
 
   async function loadProfile(userId: string) {
-    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    // Right after sign-in, PostgREST can reject the brand-new token ("JWT issued at future",
+    // PGRST303) because Supabase's Auth and API services' clocks differ by a second or two. It
+    // clears on its own, so retry that one error briefly rather than surfacing a false failure.
+    let result = await fetchProfile(userId);
+    for (let attempt = 0; attempt < 4 && isJwtClockSkew(result.error); attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      result = await fetchProfile(userId);
+    }
+    const { data, error } = result;
     if (error) {
       // The on_auth_user_created trigger (supabase/migrations) should have already created this
       // row — a missing profile here means the trigger didn't run, not a normal "not found".
