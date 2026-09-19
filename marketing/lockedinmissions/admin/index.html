@@ -35,7 +35,10 @@
     <!-- Dashboard (hidden until an admin session is confirmed) -->
     <main id="dashboard-view" class="dashboard-view" hidden>
       <header class="dashboard-header">
-        <a class="wordmark" href="../">Locked<span class="wordmark-in">In</span></a>
+        <div class="dashboard-header-title">
+          <a class="wordmark" href="../">Locked<span class="wordmark-in">In</span></a>
+          <p class="dashboard-subtitle">Newsletter Dashboard &middot; <span id="admin-email"></span></p>
+        </div>
         <button id="sign-out" class="btn btn-ghost">Sign Out</button>
       </header>
 
@@ -43,6 +46,18 @@
         <div class="stat-card">
           <span class="stat-num" id="subscriber-count">&mdash;</span>
           <span class="stat-label">confirmed subscribers</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" id="pending-count">&mdash;</span>
+          <span class="stat-label">pending confirmation</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" id="unsubscribed-count">&mdash;</span>
+          <span class="stat-label">unsubscribed</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" id="total-count">&mdash;</span>
+          <span class="stat-label">total signups</span>
         </div>
       </section>
 
@@ -68,6 +83,22 @@
       <section class="preview-section" id="preview-section" hidden>
         <h2 class="section-heading">Preview</h2>
         <iframe id="preview-frame" class="preview-frame" title="Email preview"></iframe>
+      </section>
+
+      <section class="subscribers-section">
+        <div class="section-heading-row">
+          <h2 class="section-heading">Subscribers</h2>
+          <label class="sr-only" for="subscriber-search">Search subscribers</label>
+          <input
+            id="subscriber-search"
+            class="subscriber-search"
+            type="search"
+            placeholder="Search by email&hellip;"
+          />
+        </div>
+        <div id="subscribers-table-wrap" class="subscribers-table-wrap">
+          <p class="status-text">Loading&hellip;</p>
+        </div>
       </section>
 
       <section class="history-section">

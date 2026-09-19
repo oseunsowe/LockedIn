@@ -31,8 +31,9 @@ async function checkAdminAndEnter() {
     showLogin("That account doesn't have dashboard access.");
     return;
   }
-  document.getElementById('subscriber-count').textContent = data.confirmedSubscriberCount;
-  renderHistory(data.sends ?? []);
+  const { data: userData } = await client.auth.getUser();
+  document.getElementById('admin-email').textContent = userData.user?.email ?? '';
+  applyDashboardData(data);
   await showDashboard();
 }
 
@@ -84,9 +85,67 @@ function escapeHtml(str) {
 async function loadDashboardData() {
   const { data, error } = await client.functions.invoke('send-newsletter', { method: 'GET' });
   if (error || !data) return;
+  applyDashboardData(data);
+}
+
+let allSubscribers = [];
+
+function applyDashboardData(data) {
+  allSubscribers = data.subscribers ?? [];
   document.getElementById('subscriber-count').textContent = data.confirmedSubscriberCount;
+  const pending = allSubscribers.filter((s) => !s.confirmed_at && !s.unsubscribed_at).length;
+  const unsubscribed = allSubscribers.filter((s) => s.unsubscribed_at).length;
+  document.getElementById('pending-count').textContent = pending;
+  document.getElementById('unsubscribed-count').textContent = unsubscribed;
+  document.getElementById('total-count').textContent = allSubscribers.length;
+  renderSubscribers(allSubscribers);
   renderHistory(data.sends ?? []);
 }
+
+function subscriberStatus(sub) {
+  if (sub.unsubscribed_at) return { label: 'Unsubscribed', state: 'unsubscribed' };
+  if (sub.confirmed_at) return { label: 'Confirmed', state: 'confirmed' };
+  return { label: 'Pending', state: 'pending' };
+}
+
+function renderSubscribers(subscribers) {
+  const wrap = document.getElementById('subscribers-table-wrap');
+  if (subscribers.length === 0) {
+    wrap.innerHTML = '<p class="status-text">No signups yet.</p>';
+    return;
+  }
+  const rows = subscribers
+    .map((sub) => {
+      const status = subscriberStatus(sub);
+      const platformLabels = { ios: 'iOS', android: 'Android', both: 'Both' };
+      const platform = platformLabels[sub.platform_interest] ?? '—';
+      return `
+      <tr>
+        <td class="subscriber-email">${escapeHtml(sub.email)}</td>
+        <td>${escapeHtml(platform)}</td>
+        <td><span class="status-pill" data-state="${status.state}">${status.label}</span></td>
+        <td class="subscriber-date">${new Date(sub.created_at).toLocaleDateString()}</td>
+      </tr>
+    `;
+    })
+    .join('');
+  wrap.innerHTML = `
+    <table class="subscribers-table">
+      <thead>
+        <tr><th>Email</th><th>Platform</th><th>Status</th><th>Joined</th></tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+document.getElementById('subscriber-search').addEventListener('input', (event) => {
+  const query = event.target.value.trim().toLowerCase();
+  const filtered = query
+    ? allSubscribers.filter((s) => s.email.toLowerCase().includes(query))
+    : allSubscribers;
+  renderSubscribers(filtered);
+});
 
 document.getElementById('preview-btn').addEventListener('click', () => {
   const bodyHtml = document.getElementById('body-html').value;

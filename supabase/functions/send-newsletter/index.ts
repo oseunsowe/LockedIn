@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
   }
 
   if (req.method === 'GET') {
-    const [sendsResult, countResult] = await Promise.all([
+    const [sendsResult, countResult, subscribersResult] = await Promise.all([
       supabase
         .from('newsletter_sends')
         .select('id, subject, recipient_count, created_at')
@@ -70,10 +70,22 @@ Deno.serve(async (req) => {
         .select('id', { count: 'exact', head: true })
         .not('confirmed_at', 'is', null)
         .is('unsubscribed_at', null),
+      // Never select confirmation_token here — it's a live unsubscribe/confirm credential and has
+      // no business leaving the server, even to an authenticated admin's browser.
+      supabase
+        .from('waitlist_signups')
+        .select('id, email, platform_interest, source, created_at, confirmed_at, unsubscribed_at')
+        .order('created_at', { ascending: false })
+        .limit(500),
     ]);
     if (sendsResult.error) return json({ error: sendsResult.error.message }, 500);
+    if (subscribersResult.error) return json({ error: subscribersResult.error.message }, 500);
     return json(
-      { sends: sendsResult.data, confirmedSubscriberCount: countResult.count ?? 0 },
+      {
+        sends: sendsResult.data,
+        confirmedSubscriberCount: countResult.count ?? 0,
+        subscribers: subscribersResult.data,
+      },
       200,
     );
   }

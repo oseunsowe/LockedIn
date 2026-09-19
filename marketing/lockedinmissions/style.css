@@ -132,6 +132,8 @@ main,
   border: none;
   cursor: pointer;
   border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
 }
 
@@ -437,6 +439,11 @@ main {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+#waitlist-submit {
+  padding: 14px 24px;
+  font-size: 15px;
 }
 
 #email {

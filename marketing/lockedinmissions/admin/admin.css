@@ -16,6 +16,14 @@
   padding: 24px;
 }
 
+/* An explicit `display` above always beats the UA stylesheet's `[hidden] { display: none }` at
+   equal specificity (author origin wins regardless of source order) — without this, setting
+   `.hidden = true` in JS silently failed to hide the login view once the dashboard appeared. */
+.login-view[hidden],
+.dashboard-view[hidden] {
+  display: none;
+}
+
 .login-form {
   width: 100%;
   max-width: 340px;
@@ -65,7 +73,7 @@
 }
 
 .dashboard-view {
-  max-width: 720px;
+  max-width: 860px;
   margin: 0 auto;
   padding: 24px clamp(20px, 5vw, 32px) 80px;
 }
@@ -74,7 +82,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   padding-block: 16px 32px;
+  flex-wrap: wrap;
+}
+
+.dashboard-header-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dashboard-subtitle {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-tertiary);
 }
 
 .btn-ghost {
@@ -89,14 +112,17 @@
 }
 
 .stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
   margin-bottom: 40px;
 }
 
 .stat-card {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 20px 28px;
+  padding: 20px 24px;
   border-radius: 16px;
   background: var(--obsidian);
   border: 1px solid var(--border-subtle);
@@ -125,10 +151,133 @@
 
 .compose-section,
 .preview-section,
+.subscribers-section,
 .history-section {
   margin-bottom: 40px;
   padding-bottom: 40px;
   border-bottom: 1px solid var(--border-subtle);
+}
+
+.section-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.section-heading-row .section-heading {
+  margin-bottom: 0;
+}
+
+.subscriber-search {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--pure);
+  background: var(--obsidian);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  padding: 8px 16px;
+  min-width: 0;
+  width: 220px;
+  max-width: 100%;
+}
+
+.subscribers-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+}
+
+.subscribers-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.subscribers-table th,
+.subscribers-table td {
+  text-align: left;
+  padding: 12px 16px;
+  white-space: nowrap;
+}
+
+.subscribers-table th {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  background: var(--obsidian);
+  position: sticky;
+  top: 0;
+}
+
+.subscribers-table tbody tr {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.subscribers-table tbody tr:hover {
+  background: color-mix(in srgb, var(--obsidian) 60%, transparent);
+}
+
+.subscriber-email {
+  color: var(--pure);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+
+.subscriber-date {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-pill[data-state='confirmed'] {
+  background: color-mix(in srgb, var(--gold) 18%, transparent);
+  color: var(--gold);
+}
+
+.status-pill[data-state='pending'] {
+  background: color-mix(in srgb, var(--text-tertiary) 20%, transparent);
+  color: var(--text-secondary);
+}
+
+.status-pill[data-state='unsubscribed'] {
+  background: color-mix(in srgb, #ef4444 18%, transparent);
+  color: #ef4444;
+}
+
+@media (max-width: 600px) {
+  .subscribers-table th,
+  .subscribers-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .subscriber-email {
+    max-width: 160px;
+  }
+
+  .section-heading-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .subscriber-search {
+    width: 100%;
+  }
 }
 
 .compose-actions {
