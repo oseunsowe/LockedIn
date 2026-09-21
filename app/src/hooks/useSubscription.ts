@@ -11,7 +11,7 @@ export type Subscription = {
 
 /** Every profile gets a `subscriptions` row automatically (`on_profile_created_subscription`
  * trigger), defaulting to `tier: 'free'` — this just reads it under `subscriptions_select_own`.
- * Written only by a future RevenueCat webhook handler; nothing in the client ever writes here. */
+ * Written only by the revenuecat-webhook Edge Function; nothing in the client ever writes here. */
 export function useSubscription(userId: string | undefined) {
   return useQuery<Subscription>({
     queryKey: ['subscription', userId],

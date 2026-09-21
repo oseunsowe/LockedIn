@@ -207,6 +207,7 @@ export type Database = {
           revenuecat_app_user_id: string | null;
           current_period_end: string | null;
           updated_at: string;
+          last_event_at: string | null;
         };
         // Written only by the RevenueCat webhook handler (service_role).
         Insert: never;

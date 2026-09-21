@@ -2,15 +2,13 @@
 // (TODO.md §12: "Server-side entitlement checks. Never trust a client boolean for a paid AI
 // call."). `subscriptions` rows are created automatically for every profile (see
 // 20260901000006_subscriptions.sql's `on_profile_created_subscription` trigger) and are written
-// only by a future RevenueCat webhook handler (service_role) — never by the client, so reading
+// only by the revenuecat-webhook Edge Function (service_role) — never by the client, so reading
 // `tier` here is trustworthy the same way reading `auth.uid()` from a validated JWT is.
 //
-// Not wired to a real payment processor yet (Phase 12 is otherwise unbuilt — no RevenueCat
-// account/App Store Connect products exist in this environment to test against). What's real
-// today: every user has a genuine `tier` value (defaulting to `free`), and these limits are
-// actually enforced against it — a user manually flipped to `pro`/`elite` in the database (e.g.
-// by a future webhook, or by hand for testing) immediately gets the higher limit, with no app
-// update or client trust involved.
+// The webhook is live and tested, but nothing calls it yet: the app has no purchase flow until the
+// RevenueCat SDK, a dev-client build, and App Store / Play products exist. Until then a user's
+// tier only changes by hand in the database; either way the higher limit applies immediately,
+// with no app update or client trust involved.
 
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
 
