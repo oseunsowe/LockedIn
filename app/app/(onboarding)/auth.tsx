@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { firstNameOf } from '@/lib/names';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/state/auth';
 import { useOnboardingDraft } from '@/state/onboardingDraft';
@@ -46,7 +47,7 @@ export default function Auth() {
       if (!session) return;
       const userId = session.user.id;
 
-      const trimmedName = displayName.trim();
+      const trimmedName = firstNameOf(displayName) ?? '';
       if (identityClass || trimmedName) {
         await supabase
           .from('profiles')
@@ -97,7 +98,7 @@ export default function Auth() {
     setSubmitting(true);
     const { error: err } =
       mode === 'signUp'
-        ? await signUpWithEmail(email, password)
+        ? await signUpWithEmail(email, password, displayName)
         : await signInWithEmail(email, password);
     setSubmitting(false);
     if (err) setError(err);

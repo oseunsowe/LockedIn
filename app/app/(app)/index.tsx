@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ExecutionScoreRing } from '@/components/ExecutionScoreRing';
 import { MainQuestCard } from '@/components/MainQuestCard';
 import { MissionRow } from '@/components/MissionRow';
+import { NamePrompt } from '@/components/NamePrompt';
 import { XpBar } from '@/components/XpBar';
 import { useActiveMissions } from '@/hooks/useActiveMissions';
 import { pickMainQuest } from '@/lib/missions';
@@ -35,7 +36,7 @@ export default function Dashboard() {
   // just cheap insurance against a Fast Refresh edge case, not a real steady-state path.
   if (!profile) return null;
 
-  const displayName = profile.display_name ?? session?.user.email?.split('@')[0] ?? 'there';
+  const displayName = profile.display_name ?? 'there';
   const { mainQuest, secondary } = pickMainQuest(missionsQuery.data ?? []);
 
   return (
@@ -86,6 +87,8 @@ export default function Dashboard() {
           </View>
         </View>
       </View>
+
+      {!profile.display_name && session ? <NamePrompt userId={session.user.id} /> : null}
 
       <View style={styles.ringWrap}>
         <ExecutionScoreRing score={profile.execution_score} />

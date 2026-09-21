@@ -1,6 +1,7 @@
-import type { Session } from '@supabase/supabase-js';
+import type { Session, User } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
+import { firstNameOf } from '@/lib/names';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/lib/database.types';
 
@@ -16,7 +17,7 @@ type AuthState = {
   signInWithApple: () => Promise<AuthResult>;
   signInWithGoogle: () => Promise<AuthResult>;
   signInWithEmail: (email: string, password: string) => Promise<AuthResult>;
-  signUpWithEmail: (email: string, password: string) => Promise<AuthResult>;
+  signUpWithEmail: (email: string, password: string, firstName?: string) => Promise<AuthResult>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 };
@@ -35,7 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [profile, setProfile] = useState<Profile | null>(null);
 
-  async function loadProfile(userId: string) {
+  async function loadProfile(user: User) {
+    const userId = user.id;
     // Right after sign-in, PostgREST can reject the brand-new token ("JWT issued at future",
     // PGRST303) because Supabase's Auth and API services' clocks differ by a second or two. It
     // clears on its own, so retry that one error briefly rather than surfacing a false failure.
@@ -52,6 +54,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     setProfile(data);
+
+    // Email sign-up requires confirming the address first, so there's no session (and no way to
+    // write the profile) at sign-up time — the typed name rides along in user metadata instead and
+    // is applied here, the first time this user has a session.
+    const metaName = firstNameOf(user.user_metadata?.display_name);
+    if (!data.display_name && metaName) {
+      const { error: nameError } = await supabase
+        .from('profiles')
+        .update({ display_name: metaName })
+        .eq('id', userId)
+        .is('display_name', null);
+      if (!nameError) {
+        setProfile((prev) => (prev ? { ...prev, display_name: metaName } : prev));
+      }
+    }
 
     // Keeps the streak day-boundary timezone-correct (TODO.md §9's "timezone-correct day
     // boundary") without a dedicated settings screen — synced opportunistically on every profile
@@ -79,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .getSession()
       .then(({ data }) => {
         setSession(data.session);
-        if (data.session) void loadProfile(data.session.user.id);
+        if (data.session) void loadProfile(data.session.user);
       })
       .catch((err) => {
         // No .catch() here previously meant a rejected getSession() (network hiccup, a storage
@@ -97,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
       if (nextSession) {
-        void loadProfile(nextSession.user.id);
+        void loadProfile(nextSession.user);
       } else {
         setProfile(null);
       }
@@ -201,15 +218,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         return { error: error?.message ?? null };
       },
-      async signUpWithEmail(email, password) {
-        const { error } = await supabase.auth.signUp({ email, password });
+      async signUpWithEmail(email, password, firstName) {
+        const name = firstNameOf(firstName);
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          ...(name ? { options: { data: { display_name: name } } } : {}),
+        });
         return { error: error?.message ?? null };
       },
       async signOut() {
         await supabase.auth.signOut();
       },
       async refreshProfile() {
-        if (session) await loadProfile(session.user.id);
+        if (session) await loadProfile(session.user);
       },
     }),
     [session, profile],
