@@ -12,11 +12,12 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useSubscription } from '@/hooks/useSubscription';
+import { getLocalizedPrice } from '@/lib/localizedPricing';
 import { LEGAL_URL } from '@/lib/legal';
 import {
   PRICES_ARE_PLACEHOLDER,
   TRIAL_DAYS,
-  formatUsd,
+  TRIAL_ELIGIBLE_PERIODS,
   plans,
   yearlySavingsPercent,
   type BillingPeriod,
@@ -32,6 +33,13 @@ const paidPlans = plans.filter(
 );
 const yearlySavings = Math.min(...paidPlans.map((plan) => yearlySavingsPercent(plan.priceUsd)));
 
+const PERIOD_OPTIONS: { key: BillingPeriod; label: string; suffix: string }[] = [
+  { key: 'daily', label: 'Day', suffix: ' / day' },
+  { key: 'weekly', label: 'Week', suffix: ' / week' },
+  { key: 'monthly', label: 'Month', suffix: ' / month' },
+  { key: 'yearly', label: 'Year', suffix: ' / year' },
+];
+
 /**
  * Paywall (TODO.md §12, `LockedIn.md` Screen 15). Framed as the spec calls for — "not a SaaS
  * pricing table; a level-unlock screen" — around the two gates that actually exist and are
@@ -39,10 +47,13 @@ const yearlySavings = Math.min(...paidPlans.map((plan) => yearlySavingsPercent(p
  * prices, and the trial length all come from src/lib/plans.ts. Deliberately does NOT list "Focus
  * Mode / advanced missions / XP bonuses" — none of those exist as real, gateable features yet.
  *
- * The prices are placeholders (PRICES_ARE_PLACEHOLDER) and say so on screen. The Subscribe button
- * is real UI but disabled: taking payment needs `react-native-purchases` (no Expo Go support, so a
- * dev-client build) plus App Store / Play products. The server half is live — the
- * revenuecat-webhook Edge Function writes `subscriptions.tier` when a purchase happens.
+ * The prices are placeholders (PRICES_ARE_PLACEHOLDER) and say so on screen — every price shown
+ * goes through `getLocalizedPrice()` (src/lib/localizedPricing.ts) rather than reading
+ * `priceUsd` directly, so swapping in RevenueCat's real per-territory price once it exists is a
+ * one-file change, not a rewrite of this screen. The Subscribe button is real UI but disabled:
+ * taking payment needs `react-native-purchases` (no Expo Go support, so a dev-client build) plus
+ * App Store / Play products. The server half is live — the revenuecat-webhook Edge Function
+ * writes `subscriptions.tier` when a purchase happens.
  */
 export default function PaywallModal() {
   const insets = useSafeAreaInsets();
@@ -50,6 +61,7 @@ export default function PaywallModal() {
   const subscriptionQuery = useSubscription(session?.user.id);
   const currentTier = subscriptionQuery.data?.tier ?? 'free';
   const [period, setPeriod] = useState<BillingPeriod>('yearly');
+  const trialEligible = TRIAL_ELIGIBLE_PERIODS.includes(period);
 
   return (
     <View style={styles.container}>
@@ -78,23 +90,23 @@ export default function PaywallModal() {
         </Text>
 
         <View style={styles.periodToggle} accessibilityRole="radiogroup">
-          {(['monthly', 'yearly'] as const).map((option) => {
-            const selected = option === period;
+          {PERIOD_OPTIONS.map((option) => {
+            const selected = option.key === period;
             return (
               <Pressable
-                key={option}
+                key={option.key}
                 style={[styles.periodOption, selected ? styles.periodOptionSelected : null]}
-                onPress={() => setPeriod(option)}
+                onPress={() => setPeriod(option.key)}
                 accessibilityRole="radio"
                 accessibilityState={{ selected }}
                 accessibilityLabel={
-                  option === 'yearly' ? `Yearly, save ${yearlySavings} percent` : 'Monthly'
+                  option.key === 'yearly' ? `Yearly, save ${yearlySavings} percent` : option.label
                 }
               >
                 <Text style={[styles.periodLabel, selected ? styles.periodLabelSelected : null]}>
-                  {option === 'yearly' ? 'Yearly' : 'Monthly'}
+                  {option.label}
                 </Text>
-                {option === 'yearly' ? (
+                {option.key === 'yearly' ? (
                   <Text style={styles.saveBadge}>SAVE {yearlySavings}%</Text>
                 ) : null}
               </Pressable>
@@ -124,14 +136,14 @@ export default function PaywallModal() {
                   {tier.priceUsd ? (
                     <View style={styles.priceBlock}>
                       <Text style={styles.priceText}>
-                        {formatUsd(tier.priceUsd[period])}
+                        {getLocalizedPrice(tier.priceUsd[period]).formatted}
                         <Text style={styles.pricePeriod}>
-                          {period === 'yearly' ? ' / year' : ' / month'}
+                          {PERIOD_OPTIONS.find((p) => p.key === period)!.suffix}
                         </Text>
                       </Text>
                       {period === 'yearly' ? (
                         <Text style={styles.priceSub}>
-                          about {formatUsd(tier.priceUsd.yearly / 12)} / month
+                          about {getLocalizedPrice(tier.priceUsd.yearly / 12).formatted} / month
                         </Text>
                       ) : null}
                     </View>
@@ -155,10 +167,18 @@ export default function PaywallModal() {
                       style={styles.subscribeButton}
                       disabled
                       accessibilityRole="button"
-                      accessibilityLabel={`Start ${TRIAL_DAYS}-day free trial of ${tier.label} — launching soon`}
+                      accessibilityLabel={
+                        trialEligible
+                          ? `Start ${TRIAL_DAYS}-day free trial of ${tier.label} — launching soon`
+                          : `Unlock ${tier.label} — launching soon`
+                      }
                       accessibilityState={{ disabled: true }}
                     >
-                      <Text style={styles.subscribeLabel}>Start {TRIAL_DAYS}-day free trial</Text>
+                      <Text style={styles.subscribeLabel}>
+                        {trialEligible
+                          ? `Start ${TRIAL_DAYS}-day free trial`
+                          : `Unlock ${tier.label}`}
+                      </Text>
                       <Text style={styles.soonBadge}>SOON</Text>
                     </Pressable>
                   ) : null}

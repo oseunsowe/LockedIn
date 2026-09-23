@@ -475,14 +475,81 @@ Per `LockedIn.md` Screen 6 + the §"Important Product Decision" in `docs/DESIGN-
 ## Phase 12 — Monetization
 *Gate: sandbox purchase → entitlement unlocks → restore works.*
 
-- [ ] **P0** RevenueCat (`react-native-purchases`) — do not hand-roll StoreKit. **Not installed.** It's a native module with no Expo Go support at all — importing it anywhere in the bundled app would crash every Expo Go session currently used for testing everything else this project has built. Genuinely blocked on the dev-client decision (§0.5), not just deferred out of caution.
-- [ ] **P0** App Store Connect products: Free / Pro / Elite, monthly + annual — blocked on Apple Developer Program enrollment (§0.5), same as the app-blocking feature.
-- [x] **P0** Paywall — `LockedIn.md` Screen 15. **Not a SaaS pricing table**; a level-unlock screen. "Unlock your next level." — `app/(modals)/paywall.tsx`, real UI, no fabricated prices anywhere (App Store Connect products don't exist yet to price against). Shows the two gates that are actually real (below), the user's actual current tier, and a visibly-disabled "SOON" Subscribe button — same honest-stub pattern as Template mission creation.
+- [ ] **P0** RevenueCat (`react-native-purchases`) — do not hand-roll StoreKit. **Not installed.** It's a native module with no Expo Go support at all — importing it anywhere in the bundled app would crash every Expo Go session currently used for testing everything else this project has built. Genuinely blocked on the dev-client decision (§0.5), not just deferred out of caution. See §12.3 for exactly what's needed to set this up once unblocked.
+- [ ] **P0** App Store Connect / Play Console products — blocked on Apple Developer Program + Google Play Developer enrollment (§0.5). Product ids and cycles to create are decided (§12.2); this item is "create the products to match," not "decide what to create."
+- [x] **P0** Paywall — `LockedIn.md` Screen 15. **Not a SaaS pricing table**; a level-unlock screen. "Unlock your next level." — `app/(modals)/paywall.tsx`, real UI, driven entirely by `app/src/lib/plans.ts` (plans, limits, prices, trial length — single source of truth, covered by `src/lib/__tests__/plans.test.ts`). Shows the two gates that are actually real (below), the user's actual current tier, a Day/Week/Month/Year billing-cycle toggle with real target prices, and a visibly-disabled "SOON" Subscribe/trial button — same honest-stub pattern as Template mission creation. `PRICES_ARE_PLACEHOLDER` in `plans.ts` still flips a "not live yet" notice on screen — the *price* is a real decision (§12.2), the *ability to pay* is still the stub.
 - [~] **P0** Gate list: AI verification volume, Screenshot Intelligence, Focus Mode, advanced missions, XP bonuses — **two of five are real, the other three don't exist as features yet.** AI-verification and Screenshot-Intelligence volume are genuinely tier-gated server-side (see the entitlement checks below) and shown honestly on the Paywall. Focus Mode/advanced missions/XP bonuses are deliberately **not** listed on the Paywall — Focus Mode has no persistence to gate (§7.3), and the other two don't exist anywhere in the schema or code; advertising a benefit that doesn't exist would be a customer-facing lie, not a stub.
-- [x] **P0** **Server-side entitlement checks.** Never trust a client boolean for a paid AI call — that's your API bill. — real: `supabase/functions/_shared/entitlements.ts`'s `getSubscriptionTier()` reads the user's real `subscriptions.tier` (service_role, written only by a future RevenueCat webhook — never the client) and both `verify-proof` and `scan-screenshots` now apply **tier-aware** daily limits instead of one flat number for everyone (free/pro/elite: 5/20/50 verifications per day, 15/60/150 screenshot scans per day — placeholder figures, a real pricing/limits decision nobody has made yet, but the mechanism enforcing whatever numbers get chosen is real and live). Every profile already gets a `tier: 'free'` `subscriptions` row automatically (`20260901000006_subscriptions.sql`'s trigger), so this works today with zero payment integration — flip a user's `tier` by hand in the database and their limits change immediately, no app update, no client trust involved.
-- [ ] **P0** Restore purchases (Apple rejects without it); privacy policy + terms links on the paywall (also required) — restore purchases blocked on RevenueCat SDK above. Legal links are real and live, just not on this specific screen — they're on Profile → Legal (linking to the same hosted Privacy Policy/Terms this screen would need).
+- [x] **P0** **Server-side entitlement checks.** Never trust a client boolean for a paid AI call — that's your API bill. — real: `supabase/functions/_shared/entitlements.ts`'s `getSubscriptionTier()` reads the user's real `subscriptions.tier` (service_role) and both `verify-proof` and `scan-screenshots` apply **tier-aware** daily limits instead of one flat number for everyone (free/pro/elite: 5/20/50 verifications per day, 15/60/150 screenshot scans per day — the per-day *limit* numbers are still placeholders nobody has revisited; the *price* of Pro/Elite is decided, see §12.2). Every profile already gets a `tier: 'free'` `subscriptions` row automatically (`20260901000006_subscriptions.sql`'s trigger), so this works today with zero payment integration — flip a user's `tier` by hand in the database and their limits change immediately, no app update, no client trust involved.
+- [x] **P0** **`subscriptions.tier`/`status` writer.** `supabase/functions/revenuecat-webhook/index.ts` — real, deployed. Verifies a shared-secret Authorization header (fail-closed if unset), maps `INITIAL_PURCHASE`/`RENEWAL`/`PRODUCT_CHANGE`/`UNCANCELLATION`/`SUBSCRIPTION_EXTENDED` events to a tier by parsing the product id (`lockedin_<tier>_<period>` — see §12.2/§12.3), handles `EXPIRATION` (→ free) and support-initiated `CANCELLATION` (→ immediate revoke) distinctly from a plain auto-renew-off cancellation (keeps tier until expiration), and drops out-of-order webhook deliveries via `last_event_at`. Not yet receiving real events — nothing calls it until RevenueCat exists (§12.3).
+- [ ] **P0** Restore purchases (Apple rejects without it); privacy policy + terms links on the paywall (also required) — restore purchases blocked on RevenueCat SDK above. **Legal links: done** — `app/src/lib/legal.ts`'s `LEGAL_URL`, live on the paywall itself now (Privacy Policy / Terms of Service row under the footnote), not just Profile → Legal.
 - [x] **P1** Free-tier limits generous enough to reach one verified mission — the aha moment must be free — free tier gets 5 AI verifications/day, comfortably more than the one mission needed for the "aha moment."
-- [ ] **P1** Trial + intro pricing — blocked on the same App Store Connect products as everything else pricing-related.
+- [x] **P1** Trial + intro pricing — **decided**: 7-day free trial (`TRIAL_DAYS` in `plans.ts`), offered only on Monthly/Yearly (`TRIAL_ELIGIBLE_PERIODS` — a trial longer than a Day/Week pass would just be giving the pass away free, so those two show a plain "Unlock" CTA instead). Still blocked on real App Store Connect/Play Console products to actually implement.
+
+### 12.2 Pricing decision (resolved 2026-09-22, extended 2026-09-23) — competitive research + daily/weekly cycles + PPP country tiers
+
+**Why this needed a real decision:** §12 used to say pricing was "nobody has made this decision yet," and two different placeholder attempts existed in parallel (one in this file's history with no research behind it, one committed to `plans.ts` with equally arbitrary numbers). This section is the reconciled, research-backed decision now encoded in `app/src/lib/plans.ts` — the single source of truth the paywall actually reads from.
+
+**Direct competitors researched (App Store listings, Sep 2026):**
+
+| App | Monthly | Annual | Notes |
+| --- | --- | --- | --- |
+| Tonic: Earn Screen Time | $9.99 | $29.99 | 7-day trial; automatic HealthKit-based verification |
+| Opal: Screen Time Control | $19.99 | $99.99 | Category's most-complained-about price — overlaps free iOS Screen Time |
+| One Sec | $2.99 | $19.99 | Friction-based, not verification-based; 50% student discount |
+| ScrollToll: Screen-Time Gym | $2.29 | ~$100 | Live pose-estimation verification |
+
+**The gap:** none of the four offer anything shorter than monthly. Every one of them forces a subscription decision on day one, which is exactly the friction a mission/sprint-shaped product like LockedIn doesn't need to inherit — a user cramming for one exam or one launch week has no reason to commit to 30 days.
+
+**Decision — two paid tiers, four cycles each** (`plans.ts`'s `plans` array):
+
+| Tier | Day | Week | Month | Year (implied monthly / savings) |
+| --- | --- | --- | --- | --- |
+| Pro | $1.99 | $4.99 | $9.99 | $59.99 (~$5.00/mo · save 50%) |
+| Elite | $3.99 | $9.99 | $19.99 | $129.99 (~$10.83/mo · save 46%) |
+
+Pro's monthly anchors just under Tonic (the closest direct comparable — also AI-verification-based) to win the head-to-head price comparison. Elite's monthly anchors just under Opal for the same reason, while still being a real step up from Pro. Annual pricing on both follows the category's own ~45-50% multi-month discount norm. Daily/weekly are new to the category — priced so a week ≈ 2.5 days and a month ≈ 2 weeks, the standard "shorter cycle costs proportionally more per day" curve that makes the discount from committing longer feel real without punishing someone who only needs one day.
+
+**Country-tier (PPP) pricing — not implemented in-app, implemented at the store level:** once App Store Connect / Google Play Console products exist, do **not** rely on Apple's default nominal-exchange-rate auto-conversion (it overcharges price-sensitive markets 3-4x relative to local affordability — e.g. a flat USD-converted price in India). Use manual/PPP-adjusted territory pricing instead (App Store Connect's per-territory price points, or RevenueCat's territory price overrides — see §12.3):
+
+- **Tier 1 — Premium (multiplier ~0.90–1.20 of US price):** US, UK, AU, JP, DE, CA
+- **Tier 2 — Strong developed (~0.70–0.90):** FR, IT, ES, KR
+- **Tier 3 — Mid-price growth (~0.45–0.70):** BR, MX, PL, TR
+- **Tier 4 — Price-sensitive growth (~0.20–0.45):** IN, ID, PH, NG, and similar
+
+This is a store-configuration task, not app code — the client never hardcodes currency or territory logic; RevenueCat/StoreKit resolve the localized price automatically once entitlements go live. The paywall's own footnote and the `PRICES_ARE_PLACEHOLDER` flag already cover the "not live yet" messaging, so none of this requires a UI change when it lands.
+
+### 12.3 What's actually needed to set up RevenueCat + real App Store/Play products (checklist, 2026-09-23)
+
+Nothing here is built or paid for yet — this is the concrete list of accounts, decisions, and inputs someone has to go get, grounded in what `revenuecat-webhook/index.ts` and `plans.ts` already assume.
+
+**Apple side:**
+
+- [ ] Apple Developer Program enrollment ($99/yr) — long lead time, start first (§0.5 already flags this).
+- [ ] App Store Connect app record for `com.lockedin.app` (bundle id already set in `app.json`).
+- [ ] Banking + tax (Paid Applications Agreement) in App Store Connect — in-app purchases are blocked until this is accepted, and it can take days to clear.
+- [ ] Auto-renewable subscription group + products. **Platform constraint: Apple's shortest auto-renewable subscription duration is 1 week.** `weekly`/`monthly`/`yearly` map directly to StoreKit subscriptions; `daily` cannot — it has to be a Non-Consumable/Consumable in-app purchase instead, with RevenueCat's non-subscription "duration" feature granting a 24h entitlement (RevenueCat supports this natively; it's built for exactly this "short-lived pass" shape).
+- [ ] Product ids created **exactly matching** `productId()` in `plans.ts`: `lockedin_pro_weekly`, `lockedin_pro_monthly`, `lockedin_pro_yearly`, `lockedin_elite_weekly`, `lockedin_elite_monthly`, `lockedin_elite_yearly` (subscriptions) + `lockedin_pro_daily`, `lockedin_elite_daily` (non-subscription IAPs) — the webhook parses the tier back out of this exact string.
+
+**Google side:**
+
+- [ ] Google Play Developer account ($25 one-time).
+- [ ] Play Console app entry for `com.lockedin.app` (package name already set in `app.json`).
+- [ ] Play App Signing opted in (Phase 17.14 already flags this for the `.aab` release itself, not just billing).
+- [ ] Subscription products with base plans. No Apple-style restriction here — `daily` (`P1D`), `weekly` (`P1W`), `monthly` (`P1M`), `yearly` (`P1Y`) can all be real Play Billing base plans on the same product, same `lockedin_<tier>_<period>` naming.
+
+**RevenueCat side:**
+
+- [ ] RevenueCat account + a Project for LockedIn.
+- [ ] Connect both stores: App Store Connect API key (generated in ASC, uploaded to RevenueCat) and a Google Play service account JSON with the right IAM roles (RevenueCat's own setup guide walks both).
+- [ ] Two Entitlements — `pro` and `elite` — each attached to that tier's products across both stores and all applicable cycles.
+- [ ] An Offering with a Package per cycle so the app can present Day/Week/Month/Year the same way `plans.ts` already models them.
+- [ ] Public SDK API keys (one per platform) — these go into `EXPO_PUBLIC_REVENUECAT_IOS_KEY` / `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY`-shaped env vars once `react-native-purchases` is actually added (not yet — see the dev-client blocker in §12).
+- [ ] The webhook connection itself: RevenueCat dashboard → Integrations → Webhooks, URL = the deployed `revenuecat-webhook` function's URL, Authorization header value = the same secret set as `REVENUECAT_WEBHOOK_SECRET` in Supabase's Edge Function secrets (`supabase secrets set`). The function fails closed (401) if this doesn't match or isn't set — verified by reading its source, not yet tested against a real RevenueCat event.
+- [ ] `Purchases.logIn(user.id)` call added to the app once the SDK lands — the webhook only acts on events whose `app_user_id` is a real Supabase user UUID; anonymous RevenueCat ids are silently ignored, not treated as errors, but a purchase made before `logIn()` is called would never reach the right user's row.
+
+**Sequencing:** Apple/Google accounts and banking have the longest lead time and no code dependency — start those first, in parallel with the dev-client build (§0.5), independent of everything else in this list.
+
+- [x] **P1** App-side plumbing for the eventual localized price, added ahead of the accounts above so the UI doesn't need a rewrite when they land — `app/src/lib/localizedPricing.ts`'s `getLocalizedPrice()`. Every price on the paywall already goes through this one function instead of reading `plans.ts`'s flat USD number directly; today it just wraps that USD number (`isEstimate: true`), but the real implementation is written out in its own doc comment — swap in `Purchases.getOfferings()`'s `Package.product.{price,currencyCode,priceString}` once RevenueCat exists, and the store resolves the correct territory-adjusted price with zero PPP math in app code. `src/lib/__tests__/localizedPricing.test.ts` covers the placeholder's current behavior.
 
 ### 12.1 Competitive signal (2026-09-05) — verification is becoming multi-modal, not photo-first
 

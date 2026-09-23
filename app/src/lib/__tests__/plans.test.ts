@@ -1,4 +1,10 @@
-import { formatUsd, plans, productId, yearlySavingsPercent } from '../plans';
+import {
+  TRIAL_ELIGIBLE_PERIODS,
+  formatUsd,
+  plans,
+  productId,
+  yearlySavingsPercent,
+} from '../plans';
 
 // This project has no Node type definitions (it's an RN app); declare only what this test uses.
 declare const __dirname: string;
@@ -51,12 +57,30 @@ describe('plans', () => {
       expect(plan.priceUsd!.yearly).toBeLessThan(plan.priceUsd!.monthly * 12);
     }
   });
+
+  it('prices every period on paid plans, cheapest to most expensive as the commitment lengthens', () => {
+    for (const plan of plans.slice(1)) {
+      const p = plan.priceUsd!;
+      expect(p.daily).toBeLessThan(p.weekly);
+      expect(p.weekly).toBeLessThan(p.monthly);
+      expect(p.monthly).toBeLessThan(p.yearly);
+    }
+  });
+
+  it('only offers a trial on periods at least as long as the trial itself', () => {
+    expect(TRIAL_ELIGIBLE_PERIODS).not.toContain('daily');
+    expect(TRIAL_ELIGIBLE_PERIODS).not.toContain('weekly');
+    expect(TRIAL_ELIGIBLE_PERIODS).toContain('monthly');
+    expect(TRIAL_ELIGIBLE_PERIODS).toContain('yearly');
+  });
 });
 
 describe('pricing helpers', () => {
   it('builds product ids the webhook can map back to a tier', () => {
     expect(productId('pro', 'monthly')).toBe('lockedin_pro_monthly');
     expect(productId('elite', 'yearly')).toBe('lockedin_elite_yearly');
+    expect(productId('pro', 'daily')).toBe('lockedin_pro_daily');
+    expect(productId('elite', 'weekly')).toBe('lockedin_elite_weekly');
   });
 
   it('formats prices to two decimals', () => {
