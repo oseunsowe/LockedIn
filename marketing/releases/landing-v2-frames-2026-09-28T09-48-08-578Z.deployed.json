@@ -1,0 +1,82 @@
+{
+  "releaseId": "landing-v2-frames-2026-09-28T09-48-08-578Z",
+  "documentRoot": "public_html",
+  "backupDirectory": ".lockedin-deployments/landing-v2-frames-2026-09-28T09-48-08-578Z/backup",
+  "files": [
+    {
+      "path": "assets/lockedin/brand/og-image.png",
+      "sha256": "2b9a7e1ebbe2a5f31a7522215ce4d126c299f9659d53409af66dcd0ca032853a",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-003-mission-detail-360.avif",
+      "sha256": "4c1cf1e1efa9e6901b8e16de9ff8df0960dc1579d6b31b6e71d1a5e4b51bdaf5",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-003-mission-detail-360.webp",
+      "sha256": "3d95817aea43cce41a4854148f4474603d179fa43d8d0b32ce9148557ad1fd2f",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-003-mission-detail-720.avif",
+      "sha256": "48ceb1f3c5b95094ab55d38deb42023b7b7ecf807cc2820603ccf6a211936a01",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-003-mission-detail-720.webp",
+      "sha256": "9fe24ac86fd89cf3cc47d1bf1b9581233b0f820f143de4893756fedee9ea86f1",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-005-intentions-360.avif",
+      "sha256": "fc9bd6fa5acb67a04aa1edb6d55f1c3036e6f2cd28a231a3a0ab2543fdd605e3",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-005-intentions-360.webp",
+      "sha256": "c5a16ee39150b7043ce4192a7869adfa4379f16251546b03f1f5faf9561d376a",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-005-intentions-720.avif",
+      "sha256": "afa8395344cc371b858a9f7ff1e2205ec8092a38fb6de043e579b71632031c75",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-005-intentions-720.webp",
+      "sha256": "1e861bdac1ec8333b83a39606782efff2f7c450df4994a72f493f23c8f7add13",
+      "previouslyExisted": true
+    },
+    {
+      "path": "css/landing.css",
+      "sha256": "74c95b8c4f0b6a2320ed4dd31cf9659b58f475a2d0bf48df260396db29a245fb",
+      "previouslyExisted": true
+    },
+    {
+      "path": "js/main.js",
+      "sha256": "52656c1da7410cf9301d01d3c6fada53891d74df8e590d115574b39e029dfbc5",
+      "previouslyExisted": true
+    },
+    {
+      "path": "confirm.html",
+      "sha256": "345909974ef9a4bb2df6fe299809b52c92c4f4fb8273cc58d4c7b58cec0b1517",
+      "previouslyExisted": true
+    },
+    {
+      "path": "index.html",
+      "sha256": "fc902894a9baf81615bd40c8623479adbeac08c29dfb1f34e62c1e1c354f6814",
+      "previouslyExisted": true
+    },
+    {
+      "path": "reset-password.html",
+      "sha256": "618bf530fb77effe6a595163a101bab74025297ca0b74c0873399579134a83a0",
+      "previouslyExisted": true
+    },
+    {
+      "path": "unsubscribe.html",
+      "sha256": "1f31e26929081c9f56002cf0a65e1171899f6c196ce876a412b8ec104f42bdcc",
+      "previouslyExisted": true
+    }
+  ]
+}
