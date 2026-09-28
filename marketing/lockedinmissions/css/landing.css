@@ -271,7 +271,16 @@ a {
   position: relative;
   width: var(--w);
   aspect-ratio: 389 / 800;
-  filter: drop-shadow(0 34px 44px rgba(0, 0, 0, 0.7)) drop-shadow(0 18px 70px rgba(99, 101, 241, 0.3));
+  isolation: isolate;
+}
+.phone::before {
+  /* Static shadow on its own element: cheap, and never re-rendered while screens animate. */
+  content: '';
+  position: absolute;
+  inset: 2% 3%;
+  z-index: -1;
+  border-radius: 15% / 7%;
+  box-shadow: 0 34px 44px -8px rgba(0, 0, 0, 0.7), 0 18px 70px rgba(99, 101, 241, 0.3);
 }
 .phone::after {
   content: '';
@@ -1067,13 +1076,11 @@ a {
 .phone-screen {
   isolation: isolate;
   transform: translateZ(0);
-  -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
 .demo-layer {
   position: absolute;
   inset: 0;
   visibility: hidden;
-  will-change: transform, opacity;
 }
 .demo-layer.is-current {
   visibility: visible;

@@ -163,7 +163,8 @@ function enhance(phone) {
     const timing = { duration: reduced.matches ? 0 : 340, easing: EASE, fill: 'forwards' };
     const out = from.animate([{ opacity: 1, transform: 'translateX(0)' }, { opacity: 0, transform: 'translateX(-7%)' }], timing);
     const inn = to.animate([{ opacity: 0, transform: 'translateX(7%)' }, { opacity: 1, transform: 'translateX(0)' }], timing);
-    await Promise.allSettled([out.finished, inn.finished]);
+    // Timer, not animation promises: they can resolve late on busy mobile GPUs and stall the flow.
+    await new Promise((resolve) => setTimeout(resolve, timing.duration + 40));
 
     from.classList.remove('is-current');
     from.setAttribute('aria-hidden', 'true');

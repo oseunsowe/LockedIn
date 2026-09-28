@@ -19,7 +19,7 @@ async function run(label, contextOptions) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource|ERR_FAILED/.test(m.text())) errors.push(m.text()); });
-  await page.goto('http://localhost:4173/', { waitUntil: 'networkidle' });
+  await page.goto(process.env.BASE ?? 'http://localhost:4173/', { waitUntil: 'networkidle' });
   await page.addStyleTag({ content: '.demo-hot{outline:2px solid #22ff88 !important;outline-offset:0}' });
 
   const phone = page.locator('.step-phone').first();
