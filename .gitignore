@@ -51,3 +51,6 @@ supabase/set_plan.sql
 task.md
 supabase/migrations/newui.md
 supabase/migrations/update.md
+
+# Play review login (contains a password)
+supabase/review-account.local.json
