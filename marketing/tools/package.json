@@ -1,0 +1,22 @@
+{
+  "name": "lockedin-marketing-tools",
+  "private": true,
+  "description": "Dev-only tooling for the static landing page (image optimisation, fonts, QA). Nothing here is deployed.",
+  "scripts": {
+    "assets": "node build-assets.mjs",
+    "serve": "node serve.mjs",
+    "qa": "node qa.mjs",
+    "page": "node build-page.mjs",
+    "qa:journey": "node qa-journey.mjs",
+    "qa:conversion": "node qa-conversion.mjs",
+    "qa:launch": "node qa-launch.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "@fontsource-variable/inter": "^5.2.0",
+    "@fontsource-variable/jetbrains-mono": "^5.2.0",
+    "@fontsource-variable/outfit": "^5.2.0",
+    "playwright": "^1.50.0",
+    "sharp": "^0.35.4"
+  }
+}

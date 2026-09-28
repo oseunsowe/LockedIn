@@ -1,0 +1,77 @@
+/*
+ * LockedIn landing v2 - design tokens.
+ * Brand colours are the app's own production values (app/src/theme/colors.ts), per the handoff's
+ * "existing production colours override reference values" rule. Cyan/success/danger are additions
+ * for the colour semantics the handoff defines; they are not yet in the app palette.
+ */
+@font-face {
+  font-family: 'Outfit';
+  src: url('../assets/fonts/outfit-latin-wght-normal.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('../assets/fonts/inter-latin-wght-normal.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('../assets/fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Surfaces */
+  --lim-black: #050508;
+  --lim-surface-01: #0a0a12;
+  --lim-surface-02: #0f0f1e;
+  --lim-surface-03: #161625;
+
+  /* Text */
+  --lim-white: #ffffff;
+  --lim-text: #f2f2f5;
+  --lim-text-2: rgba(255, 255, 255, 0.68);
+  --lim-text-3: rgba(255, 255, 255, 0.5);
+
+  /* Semantics: violet = system/action, gold = earned XP, cyan = AI, green = success */
+  --lim-violet: #6365f1;
+  --lim-violet-bright: #8b52f6;
+  --lim-violet-soft: rgba(99, 101, 241, 0.16);
+  --lim-iris: #a78bfa;
+  --lim-gold: #d4af37;
+  --lim-cyan: #13bbd4;
+  --lim-success: #34d399;
+  --lim-danger: #ef4444;
+
+  --lim-border: rgba(255, 255, 255, 0.08);
+  --lim-border-strong: rgba(255, 255, 255, 0.16);
+
+  /* Type */
+  --font-display: 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --fs-hero: clamp(2.6rem, 4.7vw + 0.6rem, 6rem);
+  --fs-h2: clamp(2.5rem, 5vw + 0.4rem, 4.75rem);
+  --fs-h3: clamp(1.5rem, 1.6vw + 1rem, 2.25rem);
+  --fs-lead: clamp(1.0625rem, 0.5vw + 0.95rem, 1.25rem);
+
+  /* Layout */
+  --content-max: 1280px;
+  --gutter: clamp(20px, 5vw, 80px);
+  --radius-card: 20px;
+  --radius-pill: 999px;
+
+  /* Motion (handoff durations) */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-micro: 160ms;
+  --dur-state: 200ms;
+  --dur-screen: 300ms;
+  --dur-reveal: 600ms;
+}
