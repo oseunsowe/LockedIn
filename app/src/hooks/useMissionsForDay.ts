@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { demoMissionsForDay } from '@/lib/demoData';
+import { useDemoMode } from '@/lib/demoMode';
 import { supabase } from '@/lib/supabase';
 import type { Mission } from '@/lib/missions';
 
@@ -28,9 +30,15 @@ export function missionsForDayQueryKey(userId: string, day: Date) {
  * silently disappear, unlike `useActiveMissions` which is deliberately status-scoped.
  */
 export function useMissionsForDay(userId: string | undefined, day: Date) {
+  const demo = useDemoMode();
   return useQuery<Mission[]>({
-    queryKey: userId ? missionsForDayQueryKey(userId, day) : ['missions', 'anonymous', 'day'],
+    queryKey: demo.enabled
+      ? ['demo', 'missions', 'day', demo.seed, dayKey(day)]
+      : userId
+        ? missionsForDayQueryKey(userId, day)
+        : ['missions', 'anonymous', 'day'],
     queryFn: async () => {
+      if (demo.enabled) return demoMissionsForDay(demo.seed, day, userId);
       const { startIso, endIso } = dayBoundsIso(day);
       const { data, error } = await supabase
         .from('missions')

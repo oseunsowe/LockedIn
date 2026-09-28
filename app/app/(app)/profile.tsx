@@ -1,12 +1,13 @@
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Linking,
   Pressable,
   ScrollView,
+  Switch,
   StyleSheet,
   Text,
   TextInput,
@@ -14,14 +15,69 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Avatar } from '@/components/Avatar';
+import { XpBar } from '@/components/XpBar';
+import { useAchievements } from '@/hooks/useAchievements';
 import { useDeleteAccount } from '@/hooks/useDeleteAccount';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useRemoveAvatar, useUploadAvatar } from '@/hooks/useUploadAvatar';
 import { useUpdateDisplayName } from '@/hooks/useUpdateDisplayName';
+import {
+  DEMO_MODE_AVAILABLE,
+  reshuffleDemoData,
+  setDemoEnabled,
+  useDemoMode,
+} from '@/lib/demoMode';
+import { rankForLevel } from '@/lib/leveling';
+import { updateNotificationPrefs, useNotificationPrefs } from '@/lib/notificationPrefsStore';
+import { getNotificationPermission, requestNotificationPermission } from '@/lib/notifications';
 import { LEGAL_URL } from '@/lib/legal';
 import { useAuth } from '@/state/auth';
-import { Icon, radius, semantic, space, type } from '@/theme';
+import { fireHaptic, Icon, palette, radius, semantic, space, type, withAlpha } from '@/theme';
 
 const tierLabel: Record<string, string> = { free: 'Free', pro: 'Pro', elite: 'Elite' };
+
+function formatHour(hour: number): string {
+  return `${hour % 12 || 12}:00 ${hour < 12 ? 'AM' : 'PM'}`;
+}
+
+/** Compact +/- control for a whole-hour value, wrapping around the clock. */
+function HourStepper({
+  label,
+  hour,
+  onChange,
+}: {
+  label: string;
+  hour: number;
+  onChange: (hour: number) => void;
+}) {
+  return (
+    <View style={styles.stepperRow}>
+      <Text style={styles.stepperLabel}>{label}</Text>
+      <View style={styles.stepper}>
+        <Pressable
+          style={styles.stepperButton}
+          onPress={() => onChange((hour + 23) % 24)}
+          accessibilityRole="button"
+          accessibilityLabel={`Earlier ${label}`}
+        >
+          <Text style={styles.stepperGlyph}>−</Text>
+        </Pressable>
+        <Text style={styles.stepperValue} accessibilityLabel={`${label} ${formatHour(hour)}`}>
+          {formatHour(hour)}
+        </Text>
+        <Pressable
+          style={styles.stepperButton}
+          onPress={() => onChange((hour + 1) % 24)}
+          accessibilityRole="button"
+          accessibilityLabel={`Later ${label}`}
+        >
+          <Text style={styles.stepperGlyph}>+</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
 
 /**
  * Account/Profile (distinct from Progress Profile — TODO.md §11's "Progress" tab covers level/XP/
@@ -40,6 +96,16 @@ export default function ProfileScreen() {
   const updateDisplayName = useUpdateDisplayName(session?.user.id);
   const deleteAccount = useDeleteAccount();
   const subscriptionQuery = useSubscription(session?.user.id);
+  const achievementsQuery = useAchievements(session?.user.id);
+  const uploadAvatar = useUploadAvatar(session?.user.id);
+  const removeAvatar = useRemoveAvatar(session?.user.id);
+  const demo = useDemoMode();
+  const notificationPrefs = useNotificationPrefs();
+
+  const [notificationsAllowed, setNotificationsAllowed] = useState<boolean | null>(null);
+  useEffect(() => {
+    void getNotificationPermission().then(setNotificationsAllowed);
+  }, []);
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
@@ -61,6 +127,90 @@ export default function ProfileScreen() {
     } catch {
       // updateDisplayName.isError renders inline below — nothing else to do here.
     }
+  }
+
+  const isAvatarBusy = uploadAvatar.isPending || removeAvatar.isPending;
+  const achievements = achievementsQuery.data ?? [];
+  const unlocked = achievements.filter((a) => a.unlocked);
+  const recentUnlocks = unlocked.slice(0, 4);
+
+  async function changeAvatar(source: 'library' | 'camera') {
+    try {
+      const url = await uploadAvatar.mutateAsync(source);
+      if (url) {
+        await refreshProfile();
+        fireHaptic('missionComplete');
+      }
+    } catch {
+      // uploadAvatar.isError renders inline below.
+    }
+  }
+
+  async function clearAvatar() {
+    try {
+      await removeAvatar.mutateAsync();
+      await refreshProfile();
+    } catch {
+      // removeAvatar.isError renders inline below.
+    }
+  }
+
+  function openAvatarMenu() {
+    fireHaptic('selectionTick');
+    Alert.alert('Profile picture', undefined, [
+      { text: 'Choose from library', onPress: () => void changeAvatar('library') },
+      { text: 'Take a photo', onPress: () => void changeAvatar('camera') },
+      ...(profile?.avatar_url
+        ? [
+            {
+              text: 'Remove picture',
+              style: 'destructive' as const,
+              onPress: () => void clearAvatar(),
+            },
+          ]
+        : []),
+      { text: 'Cancel', style: 'cancel' as const },
+    ]);
+  }
+
+  async function enableNotifications() {
+    const granted = await requestNotificationPermission();
+    setNotificationsAllowed(granted);
+    if (granted) {
+      fireHaptic('missionComplete');
+    } else {
+      Alert.alert(
+        'Notifications are off',
+        'Turn on notifications for LockedIn in your phone’s Settings to get reminders.',
+        [
+          { text: 'Not now', style: 'cancel' },
+          { text: 'Open Settings', onPress: () => void Linking.openSettings() },
+        ],
+      );
+    }
+  }
+
+  /** Turning any reminder on is the moment to ask the OS for permission — never at launch. */
+  async function toggleReminder(
+    key: 'morningBrief' | 'deadlines' | 'streakAtRisk',
+    value: boolean,
+  ) {
+    if (value && !(await getNotificationPermission())) {
+      const granted = await requestNotificationPermission();
+      if (!granted) {
+        Alert.alert(
+          'Notifications are off',
+          'Turn on notifications for LockedIn in your phone’s Settings to get reminders.',
+          [
+            { text: 'Not now', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => void Linking.openSettings() },
+          ],
+        );
+        return;
+      }
+    }
+    fireHaptic('selectionTick');
+    updateNotificationPrefs({ [key]: value });
   }
 
   function confirmDeleteAccount() {
@@ -87,9 +237,31 @@ export default function ProfileScreen() {
       ]}
     >
       <View style={styles.header}>
-        <View style={styles.avatar}>
-          <Icon name="profile" size={36} color={semantic.text.secondary} />
-        </View>
+        <Pressable
+          onPress={openAvatarMenu}
+          disabled={isAvatarBusy}
+          style={styles.avatarPressable}
+          accessibilityRole="button"
+          accessibilityLabel="Change profile picture"
+          accessibilityState={{ disabled: isAvatarBusy }}
+        >
+          <Avatar uri={profile.avatar_url} name={displayName} size={104} />
+          <View style={styles.cameraBadge}>
+            {isAvatarBusy ? (
+              <ActivityIndicator size="small" color={semantic.text.onAccent} />
+            ) : (
+              <Icon name="camera" size={16} color={semantic.text.onAccent} />
+            )}
+          </View>
+        </Pressable>
+        {uploadAvatar.isError || removeAvatar.isError ? (
+          <Text style={styles.nameError}>
+            Couldn&rsquo;t update your picture
+            {(uploadAvatar.error ?? removeAvatar.error)?.message
+              ? `: ${(uploadAvatar.error ?? removeAvatar.error)?.message}`
+              : '.'}
+          </Text>
+        ) : null}
 
         {isEditingName ? (
           <View style={styles.editNameRow}>
@@ -142,9 +314,68 @@ export default function ProfileScreen() {
         ) : null}
 
         <Text style={styles.email}>{session?.user.email ?? 'Signed in with Apple'}</Text>
-        <Text style={styles.meta}>
-          {profile.identity_class ?? 'no class set'} · Level {profile.level}
-        </Text>
+        <View style={styles.rankChip}>
+          <Icon name="streak" size={13} color={palette.gold} />
+          <Text style={styles.rankChipLabel}>
+            {rankForLevel(profile.level).toUpperCase()}
+            {profile.identity_class ? ` · ${profile.identity_class.toUpperCase()}` : ''}
+          </Text>
+        </View>
+        <View style={styles.xpBarWrap}>
+          <XpBar totalXp={profile.xp_total} />
+        </View>
+      </View>
+
+      <View style={styles.quickStats}>
+        {[
+          { label: 'Level', value: String(profile.level), icon: 'xp' as const },
+          { label: 'Day streak', value: String(profile.streak_count), icon: 'streak' as const },
+          {
+            label: 'Total XP',
+            value: profile.xp_total.toLocaleString(),
+            icon: 'trending-up' as const,
+          },
+        ].map((stat) => (
+          <Pressable
+            key={stat.label}
+            style={styles.quickStat}
+            onPress={() => {
+              fireHaptic('selectionTick');
+              router.push('/(app)/progress');
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={`${stat.label} ${stat.value}. Open progress`}
+          >
+            <Icon name={stat.icon} size={16} color={palette.iris} />
+            <Text style={styles.quickStatValue}>{stat.value}</Text>
+            <Text style={styles.quickStatLabel}>{stat.label}</Text>
+          </Pressable>
+        ))}
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>ACHIEVEMENTS</Text>
+        <Pressable
+          style={styles.achievementsCard}
+          onPress={() => router.push('/(app)/progress')}
+          accessibilityRole="button"
+          accessibilityLabel={`${unlocked.length} of ${achievements.length} achievements unlocked. Open progress`}
+        >
+          <View style={styles.achievementIcons}>
+            {recentUnlocks.length === 0 ? (
+              <Text style={styles.planRowSub}>Complete a mission to unlock your first badge.</Text>
+            ) : (
+              recentUnlocks.map((a) => (
+                <View key={a.key} style={styles.achievementBubble}>
+                  <Icon name={a.icon} size={20} color={palette.gold} />
+                </View>
+              ))
+            )}
+          </View>
+          <Text style={styles.achievementCount}>
+            {unlocked.length}/{achievements.length}
+          </Text>
+        </Pressable>
       </View>
 
       <View style={styles.section}>
@@ -188,6 +419,128 @@ export default function ProfileScreen() {
           </Pressable>
         </View>
       </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>NOTIFICATIONS</Text>
+        <View style={styles.demoCard}>
+          {notificationsAllowed === false ? (
+            <Pressable
+              style={styles.shuffleButton}
+              onPress={() => void enableNotifications()}
+              accessibilityRole="button"
+              accessibilityLabel="Enable notifications"
+            >
+              <Icon name="ai" size={16} color={palette.electric} />
+              <Text style={styles.shuffleLabel}>Enable notifications</Text>
+            </Pressable>
+          ) : null}
+          {(
+            [
+              {
+                key: 'morningBrief',
+                title: 'Morning brief',
+                sub: 'Your missions for the day',
+              },
+              {
+                key: 'deadlines',
+                title: 'Deadline reminders',
+                sub: 'An hour before a mission is due',
+              },
+              {
+                key: 'streakAtRisk',
+                title: 'Streak at risk',
+                sub: 'Tonight, if today isn’t verified yet',
+              },
+            ] as const
+          ).map((row) => (
+            <View key={row.key} style={styles.demoRow}>
+              <View style={styles.planRowText}>
+                <Text style={styles.linkLabel}>{row.title}</Text>
+                <Text style={styles.planRowSub}>{row.sub}</Text>
+              </View>
+              <Switch
+                value={notificationPrefs[row.key]}
+                onValueChange={(value) => void toggleReminder(row.key, value)}
+                trackColor={{ true: palette.electric }}
+                accessibilityLabel={row.title}
+              />
+            </View>
+          ))}
+          {notificationPrefs.morningBrief ? (
+            <HourStepper
+              label="Brief time"
+              hour={notificationPrefs.morningHour}
+              onChange={(hour) => updateNotificationPrefs({ morningHour: hour })}
+            />
+          ) : null}
+          <View style={styles.demoRow}>
+            <View style={styles.planRowText}>
+              <Text style={styles.linkLabel}>Quiet hours</Text>
+              <Text style={styles.planRowSub}>No reminders during this window</Text>
+            </View>
+            <Switch
+              value={notificationPrefs.quietHoursEnabled}
+              onValueChange={(value) => updateNotificationPrefs({ quietHoursEnabled: value })}
+              trackColor={{ true: palette.electric }}
+              accessibilityLabel="Quiet hours"
+            />
+          </View>
+          {notificationPrefs.quietHoursEnabled ? (
+            <>
+              <HourStepper
+                label="From"
+                hour={notificationPrefs.quietStartHour}
+                onChange={(hour) => updateNotificationPrefs({ quietStartHour: hour })}
+              />
+              <HourStepper
+                label="Until"
+                hour={notificationPrefs.quietEndHour}
+                onChange={(hour) => updateNotificationPrefs({ quietEndHour: hour })}
+              />
+            </>
+          ) : null}
+        </View>
+      </View>
+
+      {DEMO_MODE_AVAILABLE ? (
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>DEMO MODE</Text>
+          <View style={styles.demoCard}>
+            <View style={styles.demoRow}>
+              <View style={styles.planRowText}>
+                <Text style={styles.linkLabel}>Simulated data</Text>
+                <Text style={styles.planRowSub}>
+                  Fills Home, Missions, Progress and Insights with generated data for screenshots.
+                  Display only — nothing is written to your account.
+                </Text>
+              </View>
+              <Switch
+                value={demo.enabled}
+                onValueChange={(value) => {
+                  fireHaptic('selectionTick');
+                  setDemoEnabled(value);
+                }}
+                trackColor={{ true: palette.electric }}
+                accessibilityLabel="Demo mode"
+              />
+            </View>
+            {demo.enabled ? (
+              <Pressable
+                style={styles.shuffleButton}
+                onPress={() => {
+                  fireHaptic('selectionTick');
+                  reshuffleDemoData();
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Shuffle demo data"
+              >
+                <Icon name="failed" size={16} color={palette.electric} />
+                <Text style={styles.shuffleLabel}>Shuffle demo data</Text>
+              </Pressable>
+            ) : null}
+          </View>
+        </View>
+      ) : null}
 
       <Pressable
         style={styles.signOutButton}
@@ -245,14 +598,153 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: space.xs,
   },
-  avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: semantic.bg.surface,
+  avatarPressable: {
+    marginBottom: space.sm,
+  },
+  cameraBadge: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: semantic.action.primary,
+    borderWidth: 3,
+    borderColor: semantic.bg.canvas,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: space.sm,
+  },
+  rankChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: space.xs,
+    paddingVertical: 4,
+    paddingHorizontal: space.md,
+    borderRadius: radius.pill,
+    backgroundColor: withAlpha(palette.gold, 0.14),
+  },
+  rankChipLabel: {
+    ...type.data,
+    color: palette.gold,
+  },
+  xpBarWrap: {
+    width: '100%',
+    marginTop: space.sm,
+  },
+  quickStats: {
+    flexDirection: 'row',
+    gap: space.sm,
+    width: '100%',
+  },
+  quickStat: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+    paddingVertical: space.md,
+    borderRadius: radius.card,
+    backgroundColor: semantic.bg.surface,
+    borderWidth: 1,
+    borderColor: semantic.border.subtle,
+  },
+  quickStatValue: {
+    ...type.title,
+    fontSize: 20,
+    color: semantic.text.primary,
+  },
+  quickStatLabel: {
+    ...type.caption,
+    color: semantic.text.tertiary,
+  },
+  achievementsCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    padding: space.lg,
+    borderRadius: radius.card,
+    backgroundColor: semantic.bg.surface,
+    borderWidth: 1,
+    borderColor: semantic.border.subtle,
+  },
+  achievementIcons: {
+    flexDirection: 'row',
+    gap: space.sm,
+    flex: 1,
+  },
+  achievementBubble: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: withAlpha(palette.gold, 0.14),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  achievementCount: {
+    ...type.title,
+    fontSize: 18,
+    color: semantic.text.secondary,
+  },
+  stepperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  stepperLabel: {
+    ...type.body,
+    color: semantic.text.secondary,
+  },
+  stepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+  },
+  stepperButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: semantic.glass.fill8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepperGlyph: {
+    ...type.title,
+    fontSize: 20,
+    color: semantic.text.primary,
+  },
+  stepperValue: {
+    ...type.bodyMedium,
+    minWidth: 78,
+    textAlign: 'center',
+    color: semantic.text.primary,
+  },
+  demoCard: {
+    width: '100%',
+    gap: space.md,
+    padding: space.lg,
+    borderRadius: radius.card,
+    backgroundColor: semantic.bg.surface,
+    borderWidth: 1,
+    borderColor: withAlpha(palette.electric, 0.4),
+  },
+  demoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+  },
+  shuffleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.xs,
+    paddingVertical: space.sm,
+    borderRadius: radius.pill,
+    backgroundColor: withAlpha(palette.electric, 0.14),
+  },
+  shuffleLabel: {
+    ...type.bodyMedium,
+    fontSize: 14,
+    color: palette.electric,
   },
   nameRow: {
     flexDirection: 'row',

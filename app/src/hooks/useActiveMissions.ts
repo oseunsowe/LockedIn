@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { demoActiveMissions } from '@/lib/demoData';
+import { useDemoMode } from '@/lib/demoMode';
 import { supabase } from '@/lib/supabase';
 import type { Mission } from '@/lib/missions';
 
@@ -13,9 +15,15 @@ export function activeMissionsQueryKey(userId: string) {
  * idle (no request, no loading flicker) until auth has actually resolved a signed-in user.
  */
 export function useActiveMissions(userId: string | undefined) {
+  const demo = useDemoMode();
   return useQuery<Mission[]>({
-    queryKey: userId ? activeMissionsQueryKey(userId) : ['missions', 'anonymous'],
+    queryKey: demo.enabled
+      ? ['demo', 'missions', 'active', demo.seed]
+      : userId
+        ? activeMissionsQueryKey(userId)
+        : ['missions', 'anonymous'],
     queryFn: async () => {
+      if (demo.enabled) return demoActiveMissions(demo.seed, userId);
       const { data, error } = await supabase
         .from('missions')
         .select('*')

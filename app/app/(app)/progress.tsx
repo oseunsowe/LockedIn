@@ -1,11 +1,14 @@
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Avatar } from '@/components/Avatar';
 import { ExecutionScoreRing } from '@/components/ExecutionScoreRing';
 import { XpBar } from '@/components/XpBar';
 import { useAchievements } from '@/hooks/useAchievements';
+import { useFocusStats } from '@/hooks/useFocusSessions';
 import { useMissionHistory } from '@/hooks/useMissionHistory';
 import { useProgressStats } from '@/hooks/useProgressStats';
+import { formatFocusDuration } from '@/lib/focusStats';
 import type { Mission } from '@/lib/missions';
 import { useAuth } from '@/state/auth';
 import { Icon, palette, radius, semantic, space, type, withAlpha } from '@/theme';
@@ -43,6 +46,7 @@ export default function ProgressProfile() {
   const statsQuery = useProgressStats(session?.user.id);
   const achievementsQuery = useAchievements(session?.user.id);
   const historyQuery = useMissionHistory(session?.user.id);
+  const focusQuery = useFocusStats(session?.user.id);
 
   // AppGate never renders (app) routes until `profile` resolves — see app/(app)/index.tsx's
   // identical guard comment.
@@ -60,9 +64,7 @@ export default function ProgressProfile() {
       ]}
     >
       <View style={styles.header}>
-        <View style={styles.avatar}>
-          <Icon name="profile" size={36} color={semantic.text.secondary} />
-        </View>
+        <Avatar uri={profile.avatar_url} name={profile.display_name} size={72} />
         <Text style={styles.name}>{displayName}</Text>
         <Text style={styles.levelLine}>
           LEVEL {profile.level}
@@ -100,6 +102,11 @@ export default function ProgressProfile() {
               label="Completion"
               value={stats.completionRatePct !== null ? `${stats.completionRatePct}%` : '—'}
               sub={stats.completionRatePct !== null ? 'all-time' : 'no history yet'}
+            />
+            <StatTile
+              label="Focus"
+              value={focusQuery.data ? formatFocusDuration(focusQuery.data.weekSeconds) : '—'}
+              sub="this week"
             />
             <StatTile
               label="This Week"

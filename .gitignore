@@ -35,3 +35,19 @@ CPANEL.md
 
 # Third-party site source used only as a local design reference — not ours to redistribute
 reference.md
+
+# Private hosting connection details
+supabase/migrations/sftp.md
+supabase/migrations/sftp
+
+# Contains Supabase secret keys - never commit
+supabase/supabase.md
+
+# Operational scripts naming a real account holder - keep local
+supabase/seed_demo_account.sql
+supabase/set_plan.sql
+
+# Private planning briefs
+task.md
+supabase/migrations/newui.md
+supabase/migrations/update.md

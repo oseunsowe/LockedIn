@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { demoMissionHistory } from '@/lib/demoData';
+import { useDemoMode } from '@/lib/demoMode';
 import { supabase } from '@/lib/supabase';
 import type { Mission } from '@/lib/missions';
 
@@ -7,9 +9,13 @@ import type { Mission } from '@/lib/missions';
  * Profile's mission history. Active missions live on the Dashboard/Mission Board instead; this is
  * specifically the "how have I done" record, not "what's in flight." */
 export function useMissionHistory(userId: string | undefined) {
+  const demo = useDemoMode();
   return useQuery<Mission[]>({
-    queryKey: ['missions', userId, 'history'],
+    queryKey: demo.enabled
+      ? ['demo', 'missions', 'history', demo.seed]
+      : ['missions', userId, 'history'],
     queryFn: async () => {
+      if (demo.enabled) return demoMissionHistory(demo.seed, userId);
       const { data, error } = await supabase
         .from('missions')
         .select('*')

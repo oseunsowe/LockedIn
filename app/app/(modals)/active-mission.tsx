@@ -1,10 +1,11 @@
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useCountdown } from '@/hooks/useCountdown';
+import { useLogFocusSession } from '@/hooks/useFocusSessions';
 import { useMission } from '@/hooks/useMission';
 import { useSetMissionStatus } from '@/hooks/useMissionStatus';
 import { computeElapsedProgress } from '@/lib/time';
@@ -65,6 +66,19 @@ export default function ActiveMissionScreen() {
   const setMissionStatus = useSetMissionStatus(session?.user.id);
   const [focusActive, setFocusActive] = useState(false);
   const [focusSeconds, setFocusSeconds] = useState(0);
+  const { mutate: logFocusSession } = useLogFocusSession(session?.user.id);
+  // The running session, kept in a ref so the unmount cleanup below always sees the latest values.
+  const focusRef = useRef<{ startedAt: Date | null; seconds: number }>({
+    startedAt: null,
+    seconds: 0,
+  });
+
+  const saveFocusSession = useCallback(() => {
+    const { startedAt, seconds } = focusRef.current;
+    if (!startedAt) return;
+    focusRef.current.startedAt = null;
+    logFocusSession({ missionId: id ?? null, startedAt, durationSeconds: seconds });
+  }, [id, logFocusSession]);
   // Called unconditionally, before any early return below (Rules of Hooks) — `null` deadline is a
   // valid, handled input, so this is safe even before `missionQuery.data` exists.
   const countdown = useCountdown(missionQuery.data?.deadline ?? null);
@@ -73,15 +87,19 @@ export default function ActiveMissionScreen() {
   useEffect(() => {
     return () => {
       void deactivateKeepAwake(FOCUS_MODE_TAG);
+      // Leaving the screen mid-session still counts the time already focused.
+      saveFocusSession();
     };
-  }, []);
+  }, [saveFocusSession]);
 
-  // Ticks the in-session focus timer. Purely a local, ephemeral display (no `focus_sessions` table
-  // exists yet to persist this — see TODO.md §17.5's "Focus timer evidence" gap) — it resets to
-  // zero every time Focus Mode is toggled back on rather than claiming a history it doesn't have.
+  // Ticks the in-session focus timer. The finished session is saved to `focus_sessions` when Focus
+  // Mode is toggled off or the screen closes; the timer itself resets each time it's toggled on.
   useEffect(() => {
     if (!focusActive) return;
-    const interval = setInterval(() => setFocusSeconds((seconds) => seconds + 1), 1000);
+    const interval = setInterval(() => {
+      focusRef.current.seconds += 1;
+      setFocusSeconds(focusRef.current.seconds);
+    }, 1000);
     return () => clearInterval(interval);
   }, [focusActive]);
 
@@ -101,11 +119,13 @@ export default function ActiveMissionScreen() {
 
   async function toggleFocusMode() {
     if (focusActive) {
+      saveFocusSession();
       await deactivateKeepAwake(FOCUS_MODE_TAG);
       setFocusActive(false);
       setFocusSeconds(0);
     } else {
       await activateKeepAwakeAsync(FOCUS_MODE_TAG);
+      focusRef.current = { startedAt: new Date(), seconds: 0 };
       setFocusActive(true);
     }
   }

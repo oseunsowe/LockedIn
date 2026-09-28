@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { TabBarBackground, TabButton } from '@/components/TabBar';
+import { useNotificationSync } from '@/hooks/useNotificationSync';
 import { semantic } from '@/theme';
 
 /**
@@ -21,6 +22,7 @@ import { semantic } from '@/theme';
  * use below) — so `TabBarBackground` goes *inside* `TabList`, not the other way around.
  */
 export default function AppTabsLayout() {
+  useNotificationSync();
   return (
     <Tabs style={styles.root}>
       <OfflineBanner />

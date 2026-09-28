@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { demoAchievements } from '@/lib/demoData';
+import { useDemoMode } from '@/lib/demoMode';
 import { supabase } from '@/lib/supabase';
 import { iconRegistry, type IconName } from '@/theme';
 
@@ -23,9 +25,11 @@ function isIconName(value: string): value is IconName {
  * will see all-locked. That's shown honestly (a real, empty result), not hidden or faked.
  */
 export function useAchievements(userId: string | undefined) {
+  const demo = useDemoMode();
   return useQuery<AchievementWithStatus[]>({
-    queryKey: ['achievements', userId],
+    queryKey: demo.enabled ? ['demo', 'achievements', demo.seed] : ['achievements', userId],
     queryFn: async () => {
+      if (demo.enabled) return demoAchievements(demo.seed);
       const [catalogResult, unlockedResult] = await Promise.all([
         supabase.from('achievements').select('*'),
         supabase

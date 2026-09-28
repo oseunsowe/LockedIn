@@ -63,6 +63,8 @@ export type Database = {
           timezone: string;
           last_streak_date: string | null;
           streak_grace_used_at: string | null;
+          // Added in 20260923120000_profile_avatars.sql.
+          avatar_url: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -73,6 +75,7 @@ export type Database = {
           identity_class: IdentityClass | null;
           onboarding_completed_at: string | null;
           timezone: string;
+          avatar_url: string | null;
         }>;
         Relationships: [];
       };
@@ -171,6 +174,24 @@ export type Database = {
           icon: string;
         };
         Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      focus_sessions: {
+        Row: {
+          id: string;
+          user_id: string;
+          mission_id: string | null;
+          started_at: string;
+          duration_seconds: number;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          mission_id?: string | null;
+          started_at: string;
+          duration_seconds: number;
+        };
         Update: never;
         Relationships: [];
       };

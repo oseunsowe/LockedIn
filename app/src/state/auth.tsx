@@ -1,6 +1,8 @@
 import type { Session, User } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
+import { demoProfileStats } from '@/lib/demoData';
+import { useDemoMode } from '@/lib/demoMode';
 import { firstNameOf } from '@/lib/names';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/lib/database.types';
@@ -123,10 +125,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  const demo = useDemoMode();
+  // Demo Mode overlays generated stats on the *display* copy only — the real row is untouched.
+  const displayProfile = useMemo(
+    () => (demo.enabled && profile ? { ...profile, ...demoProfileStats(demo.seed) } : profile),
+    [demo.enabled, demo.seed, profile],
+  );
+
   const value = useMemo<AuthState>(
     () => ({
       session,
-      profile,
+      profile: displayProfile,
       async signInWithApple() {
         // expo-apple-authentication only works on physical iOS (13+) — guard with
         // AppleAuthentication.isAvailableAsync() at the call site before showing this option.
@@ -234,7 +243,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (session) await loadProfile(session.user);
       },
     }),
-    [session, profile],
+    [session, displayProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

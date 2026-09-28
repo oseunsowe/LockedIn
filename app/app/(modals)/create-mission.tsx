@@ -7,6 +7,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DifficultyMeter } from '@/components/DifficultyMeter';
 import { useCreateMission } from '@/hooks/useCreateMission';
 import { useUserCampaigns } from '@/hooks/useUserCampaigns';
+import {
+  generateMissionIdeas,
+  missionTemplates,
+  type MissionTemplate,
+} from '@/lib/missionTemplates';
 import type { MissionDifficulty, MissionType, ProofType } from '@/lib/database.types';
 import {
   allProofTypes,
@@ -126,12 +131,17 @@ const XP_MAX = 5000;
  * level" from the spec is cut here too: there's no schema column or defined semantics for it
  * (see TODO.md §7.2) — adding a chip with nothing behind it would be decoration, not a feature.
  */
+type EntryMode = 'manual' | 'template' | 'ai';
+
 export default function CreateMissionModal() {
   const insets = useSafeAreaInsets();
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
   const userCampaignsQuery = useUserCampaigns(session?.user.id);
   const createMission = useCreateMission(session?.user.id);
 
+  const [entryMode, setEntryMode] = useState<EntryMode>('manual');
+  const [templateGoal, setTemplateGoal] = useState<CampaignKey | 'all'>('all');
+  const [ideaSeed, setIdeaSeed] = useState(1);
   const [title, setTitle] = useState('');
   const [missionType, setMissionType] = useState<MissionType>('side');
   const [campaignKey, setCampaignKey] = useState<CampaignKey | null>(null);
@@ -156,6 +166,31 @@ export default function CreateMissionModal() {
       ? userCampaignsQuery.data
       : (Object.keys(campaigns) as CampaignKey[])
   ) as CampaignKey[];
+
+  const ideas = useMemo(
+    () =>
+      generateMissionIdeas({
+        identityClass: profile?.identity_class ?? null,
+        goals: (userCampaignsQuery.data ?? []) as CampaignKey[],
+        hour: new Date().getHours(),
+        seed: ideaSeed,
+      }),
+    [profile?.identity_class, userCampaignsQuery.data, ideaSeed],
+  );
+  const visibleTemplates = missionTemplates.filter(
+    (template) => templateGoal === 'all' || template.campaign === templateGoal,
+  );
+
+  /** Pre-fills the form from a template/idea, then drops back to Manual so it can be tweaked. */
+  function applyTemplate(template: MissionTemplate) {
+    setTitle(template.title);
+    setMissionType(template.type);
+    setCampaignKey(template.campaign);
+    setDifficulty(template.difficulty);
+    setCustomXp(null);
+    setProofTypes(new Set(template.proof));
+    setEntryMode('manual');
+  }
 
   function toggleProofType(proofType: ProofType) {
     setProofTypes((prev) => {
@@ -215,18 +250,120 @@ export default function CreateMissionModal() {
         <Text style={styles.subtitle}>Chips, not forms. Set it up like a challenge.</Text>
 
         <View style={styles.entryModeRow}>
-          <View style={[styles.entryModeChip, styles.entryModeChipActive]}>
-            <Text style={styles.entryModeLabelActive}>Manual</Text>
-          </View>
-          <View style={[styles.entryModeChip, styles.entryModeChipDisabled]}>
-            <Text style={styles.entryModeLabelDisabled}>Template</Text>
-            <Text style={styles.soonBadge}>SOON</Text>
-          </View>
-          <View style={[styles.entryModeChip, styles.entryModeChipDisabled]}>
-            <Text style={styles.entryModeLabelDisabled}>AI Generate</Text>
-            <Text style={styles.soonBadge}>SOON</Text>
-          </View>
+          {(
+            [
+              { key: 'manual', label: 'Manual' },
+              { key: 'template', label: 'Template' },
+              { key: 'ai', label: 'AI Generate' },
+            ] as const
+          ).map((mode) => {
+            const active = entryMode === mode.key;
+            return (
+              <Pressable
+                key={mode.key}
+                style={[styles.entryModeChip, active ? styles.entryModeChipActive : null]}
+                onPress={() => setEntryMode(mode.key)}
+                accessibilityRole="button"
+                accessibilityLabel={mode.label}
+                accessibilityState={{ selected: active }}
+              >
+                <Text style={active ? styles.entryModeLabelActive : styles.entryModeLabelDisabled}>
+                  {mode.label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
+
+        {entryMode === 'template' ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>PICK A TEMPLATE</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.chipRow}>
+                {(['all', ...(Object.keys(campaigns) as CampaignKey[])] as const).map((key) => {
+                  const selected = templateGoal === key;
+                  return (
+                    <Pressable
+                      key={key}
+                      style={[styles.chip, selected ? styles.chipSelected : null]}
+                      onPress={() => setTemplateGoal(key)}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected }}
+                    >
+                      <Text style={[styles.chipLabel, selected ? styles.chipLabelSelected : null]}>
+                        {key === 'all' ? 'All' : campaigns[key].label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </ScrollView>
+            {visibleTemplates.map((template) => (
+              <Pressable
+                key={template.id}
+                style={styles.ideaCard}
+                onPress={() => applyTemplate(template)}
+                accessibilityRole="button"
+                accessibilityLabel={`Use template: ${template.title}`}
+              >
+                <IconTile
+                  name={campaigns[template.campaign].icon}
+                  accent={campaigns[template.campaign].accent}
+                  size={40}
+                />
+                <View style={styles.ideaText}>
+                  <Text style={styles.ideaTitle}>{template.title}</Text>
+                  <Text style={styles.ideaMeta}>
+                    {missionTypeMeta[template.type].label} ·{' '}
+                    {difficultyMeta[template.difficulty].label} · +
+                    {defaultXpForDifficulty[template.difficulty]} XP
+                  </Text>
+                </View>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+
+        {entryMode === 'ai' ? (
+          <View style={styles.section}>
+            <View style={styles.ideasHeader}>
+              <Text style={styles.sectionLabel}>IDEAS FOR YOU</Text>
+              <Pressable
+                onPress={() => setIdeaSeed((seed) => seed + 1)}
+                style={styles.refreshButton}
+                accessibilityRole="button"
+                accessibilityLabel="Refresh ideas"
+              >
+                <Icon name="failed" size={14} color={palette.electric} />
+                <Text style={styles.refreshLabel}>Refresh</Text>
+              </Pressable>
+            </View>
+            <Text style={styles.ideasNote}>
+              Suggested from your goals, class and time of day. Tap one to load it.
+            </Text>
+            {ideas.map((idea) => (
+              <Pressable
+                key={idea.id}
+                style={styles.ideaCard}
+                onPress={() => applyTemplate(idea)}
+                accessibilityRole="button"
+                accessibilityLabel={`Use idea: ${idea.title}`}
+              >
+                <IconTile
+                  name={campaigns[idea.campaign].icon}
+                  accent={campaigns[idea.campaign].accent}
+                  size={40}
+                />
+                <View style={styles.ideaText}>
+                  <Text style={styles.ideaTitle}>{idea.title}</Text>
+                  <Text style={styles.ideaMeta}>
+                    {idea.reason} · +{defaultXpForDifficulty[idea.difficulty]} XP
+                  </Text>
+                </View>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
 
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>MISSION NAME</Text>
@@ -592,6 +729,51 @@ const styles = StyleSheet.create({
     ...type.body,
     color: semantic.text.secondary,
     marginTop: -space.md,
+  },
+  ideaCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    padding: space.md,
+    borderRadius: radius.card,
+    backgroundColor: semantic.bg.surface,
+    borderWidth: 1,
+    borderColor: semantic.border.subtle,
+  },
+  ideaText: {
+    flex: 1,
+    gap: 2,
+  },
+  ideaTitle: {
+    ...type.bodyMedium,
+    color: semantic.text.primary,
+  },
+  ideaMeta: {
+    ...type.caption,
+    color: semantic.text.tertiary,
+  },
+  ideasHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  ideasNote: {
+    ...type.caption,
+    color: semantic.text.tertiary,
+  },
+  refreshButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: space.md,
+    borderRadius: radius.pill,
+    backgroundColor: withAlpha(palette.electric, 0.14),
+  },
+  refreshLabel: {
+    ...type.bodyMedium,
+    fontSize: 13,
+    color: palette.electric,
   },
   entryModeRow: {
     flexDirection: 'row',

@@ -1,14 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { computeCompletionRate, computeConsistency, computeGrowthTrend } from '@/lib/progressStats';
+import { demoProgressStats } from '@/lib/demoData';
+import { useDemoMode } from '@/lib/demoMode';
 import { supabase } from '@/lib/supabase';
 
 const CONSISTENCY_WINDOW_DAYS = 30;
 
 export function useProgressStats(userId: string | undefined) {
+  const demo = useDemoMode();
   return useQuery({
-    queryKey: ['progress-stats', userId],
+    queryKey: demo.enabled ? ['demo', 'progress-stats', demo.seed] : ['progress-stats', userId],
     queryFn: async () => {
+      if (demo.enabled) return demoProgressStats(demo.seed);
       const windowStart = new Date(
         Date.now() - CONSISTENCY_WINDOW_DAYS * 24 * 60 * 60 * 1000,
       ).toISOString();

@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   ActivityIndicator,
   Pressable,
@@ -10,15 +11,28 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Avatar } from '@/components/Avatar';
 import { ExecutionScoreRing } from '@/components/ExecutionScoreRing';
 import { MainQuestCard } from '@/components/MainQuestCard';
 import { MissionRow } from '@/components/MissionRow';
 import { NamePrompt } from '@/components/NamePrompt';
 import { XpBar } from '@/components/XpBar';
 import { useActiveMissions } from '@/hooks/useActiveMissions';
+import { demoTodayStats } from '@/lib/demoData';
+import { useDemoMode } from '@/lib/demoMode';
 import { pickMainQuest } from '@/lib/missions';
 import { useAuth } from '@/state/auth';
-import { Icon, palette, radius, semantic, space, type, withAlpha } from '@/theme';
+import { Icon, type IconName, palette, radius, semantic, space, type, withAlpha } from '@/theme';
+
+function TodayTile({ icon, value, label }: { icon: IconName; value: string; label: string }) {
+  return (
+    <View style={styles.todayTile}>
+      <Icon name={icon} size={16} color={palette.iris} />
+      <Text style={styles.todayValue}>{value}</Text>
+      <Text style={styles.todayLabel}>{label}</Text>
+    </View>
+  );
+}
 
 function greeting(): string {
   const hour = new Date().getHours();
@@ -27,10 +41,47 @@ function greeting(): string {
   return 'Good Evening';
 }
 
+/** "Today's Performance" strip. Demo-only for now: the app doesn't yet aggregate real per-day
+ * stats (missions done today, XP today, focus minutes — Focus Mode isn't persisted). */
+function TodayStrip({ seed }: { seed: number }) {
+  const today = demoTodayStats(seed);
+  const completion = today.missionsTotal > 0 ? today.missionsDone / today.missionsTotal : 0;
+  return (
+    <View style={styles.todayPanel}>
+      <View style={styles.todayHeading}>
+        <View style={styles.todayTitleRow}>
+          <Text style={styles.sectionEyebrow}>TODAY</Text>
+          <Icon name="sun" size={18} color={palette.gold} />
+        </View>
+        <Text style={styles.todayPercent}>{Math.round(completion * 100)}%</Text>
+      </View>
+      <View style={styles.todayProgressTrack}>
+        <LinearGradient
+          colors={[palette.electric, palette.violet]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.todayProgressFill, { width: `${Math.round(completion * 100)}%` }]}
+        />
+      </View>
+      <View style={styles.todaySummary}>
+        <View>
+          <Text style={styles.todayValue}>
+            {today.missionsDone} / {today.missionsTotal}
+          </Text>
+          <Text style={styles.todayLabel}>missions complete</Text>
+        </View>
+        <TodayTile icon="xp" value={`+${today.xpToday}`} label="XP earned" />
+        <TodayTile icon="timer" value={`${today.focusMinutes}m`} label="focus time" />
+      </View>
+    </View>
+  );
+}
+
 export default function Dashboard() {
   const insets = useSafeAreaInsets();
   const { session, profile } = useAuth();
   const missionsQuery = useActiveMissions(session?.user.id);
+  const demo = useDemoMode();
 
   // AppGate (app/_layout.tsx) never renders this route until `profile` resolves — this guard is
   // just cheap insurance against a Fast Refresh edge case, not a real steady-state path.
@@ -56,6 +107,9 @@ export default function Dashboard() {
     >
       <View style={styles.header}>
         <View style={styles.headerText}>
+          <Text style={styles.wordmark}>
+            Locked<Text style={styles.wordmarkAccent}>In</Text>
+          </Text>
           <Text style={styles.greeting}>
             {greeting()}, {displayName}
           </Text>
@@ -82,9 +136,13 @@ export default function Dashboard() {
           >
             <Icon name="ai" size={20} color={palette.electric} />
           </Pressable>
-          <View style={styles.avatar}>
-            <Icon name="profile" size={28} color={semantic.text.secondary} />
-          </View>
+          <Pressable
+            onPress={() => router.push('/(app)/profile')}
+            accessibilityRole="button"
+            accessibilityLabel="Open your profile"
+          >
+            <Avatar uri={profile.avatar_url} name={profile.display_name} size={48} />
+          </Pressable>
         </View>
       </View>
 
@@ -93,6 +151,8 @@ export default function Dashboard() {
       <View style={styles.ringWrap}>
         <ExecutionScoreRing score={profile.execution_score} />
       </View>
+
+      {demo.enabled ? <TodayStrip seed={demo.seed} /> : null}
 
       {missionsQuery.isPending ? (
         <ActivityIndicator color={palette.electric} style={styles.loading} />
@@ -212,13 +272,73 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  wordmark: {
+    ...type.title,
+    fontSize: 18,
+    color: semantic.text.primary,
+  },
+  wordmarkAccent: {
+    color: palette.iris,
+  },
+  todayPanel: {
+    padding: space.lg,
+    gap: space.md,
+    borderRadius: radius.card,
     backgroundColor: semantic.bg.surface,
+    borderWidth: 1,
+    borderColor: semantic.border.strong,
+  },
+  todayHeading: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+  },
+  todayTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+  },
+  sectionEyebrow: {
+    ...type.data,
+    color: palette.iris,
+  },
+  todayPercent: {
+    ...type.data,
+    color: semantic.text.primary,
+  },
+  todayProgressTrack: {
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+    backgroundColor: semantic.border.subtle,
+  },
+  todayProgressFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  todaySummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  todayTile: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+    paddingVertical: space.md,
+    borderRadius: radius.card,
+    backgroundColor: semantic.bg.surface,
+    borderWidth: 1,
+    borderColor: semantic.border.subtle,
+  },
+  todayValue: {
+    ...type.title,
+    fontSize: 20,
+    color: semantic.text.primary,
+  },
+  todayLabel: {
+    ...type.caption,
+    color: semantic.text.tertiary,
   },
   ringWrap: {
     alignItems: 'center',
