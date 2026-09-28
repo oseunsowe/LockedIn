@@ -2,7 +2,7 @@ import { Tabs, TabList, TabSlot, TabTrigger } from 'expo-router/ui';
 import { StyleSheet } from 'react-native';
 
 import { OfflineBanner } from '@/components/OfflineBanner';
-import { TabBarBackground, TabButton } from '@/components/TabBar';
+import { HiddenTabButton, TabBarBackground, TabButton } from '@/components/TabBar';
 import { useNotificationSync } from '@/hooks/useNotificationSync';
 import { semantic } from '@/theme';
 
@@ -39,10 +39,10 @@ export default function AppTabsLayout() {
             <TabButton icon="progress" label="Progress" />
           </TabTrigger>
           <TabTrigger name="insights" href="/insights" asChild>
-            <TabButton icon="ai" label="Insights" />
+            <TabButton icon="ai" label="AI" />
           </TabTrigger>
           <TabTrigger name="profile" href="/profile" asChild>
-            <TabButton icon="profile" label="Profile" />
+            <HiddenTabButton />
           </TabTrigger>
         </TabBarBackground>
       </TabList>

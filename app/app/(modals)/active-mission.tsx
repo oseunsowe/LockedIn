@@ -1,7 +1,15 @@
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useCountdown } from '@/hooks/useCountdown';
@@ -117,12 +125,24 @@ export default function ActiveMissionScreen() {
     }
   }
 
+  async function endFocusSession() {
+    saveFocusSession();
+    await deactivateKeepAwake(FOCUS_MODE_TAG);
+    setFocusActive(false);
+    setFocusSeconds(0);
+  }
+
   async function toggleFocusMode() {
     if (focusActive) {
-      saveFocusSession();
-      await deactivateKeepAwake(FOCUS_MODE_TAG);
-      setFocusActive(false);
-      setFocusSeconds(0);
+      // Ending early is a deliberate act (UI v2): confirm, and say what is kept.
+      Alert.alert(
+        'End focus session?',
+        `You’ve focused for ${formatFocusTime(focusSeconds)}. That time is saved, and your mission stays active.`,
+        [
+          { text: 'Keep focusing', style: 'cancel' },
+          { text: 'End session', style: 'destructive', onPress: () => void endFocusSession() },
+        ],
+      );
     } else {
       await activateKeepAwakeAsync(FOCUS_MODE_TAG);
       focusRef.current = { startedAt: new Date(), seconds: 0 };

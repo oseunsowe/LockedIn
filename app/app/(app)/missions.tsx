@@ -1,10 +1,13 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MissionCard } from '@/components/MissionCard';
+import { ProfileButton } from '@/components/ProfileButton';
 import { useActiveMissions } from '@/hooks/useActiveMissions';
+import { useMissionHistory } from '@/hooks/useMissionHistory';
 import { useSetMissionStatus } from '@/hooks/useMissionStatus';
 import { useRecoveryMissions } from '@/hooks/useRecoveryMissions';
 import type { Mission } from '@/lib/missions';
@@ -20,13 +23,42 @@ import {
   semantic,
   space,
   type,
+  withAlpha,
 } from '@/theme';
 
-const sections: { type: Mission['type']; icon: IconName; label: string }[] = [
-  { type: 'main', icon: 'mainQuest', label: 'MAIN QUEST' },
-  { type: 'side', icon: 'side', label: 'SIDE MISSIONS' },
-  { type: 'daily', icon: 'daily', label: 'DAILY CHALLENGES' },
+type BoardFilter = 'all' | 'active' | 'upcoming' | 'completed';
+
+const filters: { key: BoardFilter; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'active', label: 'Active' },
+  { key: 'upcoming', label: 'Upcoming' },
+  { key: 'completed', label: 'Completed' },
 ];
+
+const emptyCopy: Record<BoardFilter, string> = {
+  all: 'No missions yet.',
+  active: 'Nothing active right now.',
+  upcoming: 'No upcoming missions. Schedule one with a time block.',
+  completed: 'No completed missions yet — your first verified win lands here.',
+};
+
+const typeRank: Record<Mission['type'], number> = { main: 0, side: 1, daily: 2 };
+
+/** Active = live now; Up next = time-blocked to start later. Main quests lead, then by deadline. */
+function splitByStart(list: Mission[]): { activeNow: Mission[]; upcoming: Mission[] } {
+  const now = Date.now();
+  const byPriority = (x: Mission, y: Mission) =>
+    typeRank[x.type] - typeRank[y.type] ||
+    (x.deadline ?? '9999').localeCompare(y.deadline ?? '9999');
+  const isLater = (mission: Mission) =>
+    mission.start_time !== null && new Date(mission.start_time).getTime() > now;
+  return {
+    activeNow: list.filter((mission) => !isLater(mission)).sort(byPriority),
+    upcoming: list
+      .filter(isLater)
+      .sort((x, y) => (x.start_time ?? '').localeCompare(y.start_time ?? '')),
+  };
+}
 
 export default function MissionBoard() {
   const insets = useSafeAreaInsets();
@@ -34,7 +66,44 @@ export default function MissionBoard() {
   const missionsQuery = useActiveMissions(session?.user.id);
   const recoveryQuery = useRecoveryMissions(session?.user.id);
   const setMissionStatus = useSetMissionStatus(session?.user.id);
+  const historyQuery = useMissionHistory(session?.user.id);
+  const [filter, setFilter] = useState<BoardFilter>('all');
   const missions = missionsQuery.data ?? [];
+  const { activeNow, upcoming } = splitByStart(missions);
+  const completed = (historyQuery.data ?? [])
+    .filter((mission) => mission.status === 'completed')
+    .slice(0, 12);
+  const showActive = filter === 'all' || filter === 'active';
+  const showUpcoming = filter === 'all' || filter === 'upcoming';
+  const showCompleted = filter === 'all' || filter === 'completed';
+  const filterEmpty =
+    (showActive ? activeNow.length : 0) +
+      (showUpcoming ? upcoming.length : 0) +
+      (showCompleted ? completed.length : 0) ===
+    0;
+
+  function renderSection(label: string, icon: IconName, list: Mission[]) {
+    return (
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Icon name={icon} size={16} color={semantic.text.tertiary} />
+          <Text style={styles.sectionLabel}>{label}</Text>
+          <Text style={styles.sectionCount}>{list.length}</Text>
+        </View>
+        <View style={styles.sectionList}>
+          {list.map((mission) => (
+            <MissionCard
+              key={mission.id}
+              mission={mission}
+              onPress={() =>
+                router.push({ pathname: '/(modals)/active-mission', params: { id: mission.id } })
+              }
+            />
+          ))}
+        </View>
+      </View>
+    );
+  }
   const recoveryMissions = recoveryQuery.data ?? [];
 
   function resumeMission(missionId: string) {
@@ -58,14 +127,29 @@ export default function MissionBoard() {
       >
         <View style={styles.headerRow}>
           <Text style={styles.header}>Mission Board</Text>
-          <Pressable
-            style={styles.timelineButton}
-            onPress={() => router.push('/(modals)/day-timeline')}
-            accessibilityRole="button"
-            accessibilityLabel="Day Timeline"
-          >
-            <Icon name="timeline" size={20} color={semantic.text.secondary} />
-          </Pressable>
+          <View style={styles.headerActions}>
+            <ProfileButton />
+          </View>
+        </View>
+
+        <View style={styles.filterRow} accessibilityRole="tablist">
+          {filters.map((item) => {
+            const selected = filter === item.key;
+            return (
+              <Pressable
+                key={item.key}
+                style={[styles.filterChip, selected ? styles.filterChipSelected : null]}
+                onPress={() => setFilter(item.key)}
+                accessibilityRole="tab"
+                accessibilityLabel={`Show ${item.label.toLowerCase()} missions`}
+                accessibilityState={{ selected }}
+              >
+                <Text style={[styles.filterLabel, selected ? styles.filterLabelSelected : null]}>
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
 
         {missionsQuery.isPending ? (
@@ -92,35 +176,45 @@ export default function MissionBoard() {
           </View>
         ) : (
           <>
-            {sections.map((section) => {
-              const sectionMissions = missions.filter((m) => m.type === section.type);
-              if (sectionMissions.length === 0) return null;
-              return (
-                <View key={section.type} style={styles.section}>
-                  <View style={styles.sectionHeader}>
-                    <Icon name={section.icon} size={16} color={semantic.text.tertiary} />
-                    <Text style={styles.sectionLabel}>{section.label}</Text>
-                    <Text style={styles.sectionCount}>{sectionMissions.length}</Text>
-                  </View>
-                  <View style={styles.sectionList}>
-                    {sectionMissions.map((mission) => (
-                      <MissionCard
-                        key={mission.id}
-                        mission={mission}
-                        onPress={() =>
-                          router.push({
-                            pathname: '/(modals)/active-mission',
-                            params: { id: mission.id },
-                          })
-                        }
-                      />
-                    ))}
-                  </View>
+            {showActive && activeNow.length > 0
+              ? renderSection('ACTIVE', 'mainQuest', activeNow)
+              : null}
+            {showUpcoming && upcoming.length > 0
+              ? renderSection('UP NEXT', 'timeline', upcoming)
+              : null}
+            {showCompleted && completed.length > 0 ? (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Icon name="verified" size={16} color={semantic.state.success} />
+                  <Text style={styles.sectionLabel}>COMPLETED</Text>
+                  <Text style={styles.sectionCount}>{completed.length}</Text>
                 </View>
-              );
-            })}
+                <View style={styles.sectionList}>
+                  {completed.map((mission) => (
+                    <View
+                      key={mission.id}
+                      style={styles.completedRow}
+                      accessible
+                      accessibilityLabel={`Completed: ${mission.title}, plus ${mission.xp_reward} XP`}
+                    >
+                      <Icon name="verified" size={18} color={semantic.state.success} />
+                      <Text style={styles.completedTitle} numberOfLines={1}>
+                        {mission.title}
+                      </Text>
+                      <Text style={styles.completedXp}>+{mission.xp_reward} XP</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            ) : null}
+            {filterEmpty ? (
+              <View style={styles.emptyState}>
+                <Icon name="missions" size={32} color={semantic.text.tertiary} />
+                <Text style={styles.emptyTitle}>{emptyCopy[filter]}</Text>
+              </View>
+            ) : null}
 
-            {recoveryMissions.length > 0 ? (
+            {showActive && recoveryMissions.length > 0 ? (
               <View style={styles.section}>
                 <View style={styles.sectionHeader}>
                   <Icon name="pending" size={16} color={palette.violet} />
@@ -188,6 +282,58 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: space.xl,
     gap: space.xl,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: space.sm,
+  },
+  filterChip: {
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: space.lg,
+    borderRadius: radius.pill,
+    backgroundColor: semantic.bg.surface,
+    borderWidth: 1,
+    borderColor: semantic.border.subtle,
+  },
+  filterChipSelected: {
+    backgroundColor: withAlpha(palette.electric, 0.16),
+    borderColor: palette.electric,
+  },
+  filterLabel: {
+    ...type.bodyMedium,
+    fontSize: 14,
+    color: semantic.text.secondary,
+  },
+  filterLabelSelected: {
+    color: semantic.text.primary,
+  },
+  completedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    padding: space.md,
+    borderRadius: radius.tile,
+    backgroundColor: semantic.bg.surface,
+    borderWidth: 1,
+    borderColor: semantic.border.subtle,
+  },
+  completedTitle: {
+    ...type.body,
+    flex: 1,
+    color: semantic.text.secondary,
+  },
+  completedXp: {
+    ...type.data,
+    textTransform: 'none',
+    letterSpacing: 0,
+    color: palette.gold,
   },
   headerRow: {
     flexDirection: 'row',

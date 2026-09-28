@@ -1,8 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { formatTimeRemaining } from '@/lib/time';
-import { parseProofRequirements, type Mission } from '@/lib/missions';
+import { useCountdown } from '@/hooks/useCountdown';
+import { difficultyMeta, parseProofRequirements, type Mission } from '@/lib/missions';
 import { glow, gradients, Icon, palette, radius, semantic, space, type, withAlpha } from '@/theme';
 
 type MainQuestCardProps = {
@@ -17,6 +17,8 @@ type MainQuestCardProps = {
  */
 export function MainQuestCard({ mission, onPress }: MainQuestCardProps) {
   const proofChips = parseProofRequirements(mission.proof_requirements);
+  const countdown = useCountdown(mission.deadline);
+  const difficulty = difficultyMeta[mission.difficulty];
 
   return (
     <Pressable
@@ -34,18 +36,37 @@ export function MainQuestCard({ mission, onPress }: MainQuestCardProps) {
       <View style={styles.kickerRow}>
         <Icon name="mainQuest" size={16} color={palette.gold} />
         <Text style={styles.kicker}>MAIN QUEST</Text>
+        <View style={styles.statusChip}>
+          <View style={styles.statusDot} />
+          <Text style={styles.statusText}>ACTIVE</Text>
+        </View>
       </View>
       <Text style={styles.title} numberOfLines={2}>
         {mission.title}
       </Text>
-      <View style={styles.metaRow}>
-        <View style={styles.metaChip}>
-          <Icon name="timer" size={14} color={semantic.text.secondary} />
-          <Text style={styles.metaText}>{formatTimeRemaining(mission.deadline)}</Text>
-        </View>
-        <View style={styles.metaChip}>
+      <Text style={[styles.difficulty, { color: difficulty.color }]}>{difficulty.label}</Text>
+      <View style={styles.clockRow}>
+        {countdown ? (
+          <View>
+            <Text
+              style={[styles.clock, countdown.overdue ? { color: semantic.state.warning } : null]}
+              accessibilityLabel={countdown.overdue ? 'Overdue' : `${countdown.label} remaining`}
+            >
+              {countdown.overdue ? 'OVERDUE' : countdown.label}
+            </Text>
+            <Text style={styles.clockLabel}>
+              {countdown.overdue ? 'RECOVERY AVAILABLE' : 'REMAINING'}
+            </Text>
+          </View>
+        ) : (
+          <View>
+            <Text style={styles.clock}>OPEN</Text>
+            <Text style={styles.clockLabel}>NO DEADLINE</Text>
+          </View>
+        )}
+        <View style={styles.xpBadge}>
           <Icon name="xp" size={14} color={palette.gold} />
-          <Text style={[styles.metaText, { color: palette.gold }]}>+{mission.xp_reward} XP</Text>
+          <Text style={styles.xpText}>+{mission.xp_reward} XP</Text>
         </View>
       </View>
       {proofChips.length > 0 ? (
@@ -58,6 +79,10 @@ export function MainQuestCard({ mission, onPress }: MainQuestCardProps) {
           ))}
         </View>
       ) : null}
+      <View style={styles.cta}>
+        <Text style={styles.ctaLabel}>CONTINUE MISSION</Text>
+        <Icon name="play" size={14} color={semantic.text.onAccent} />
+      </View>
     </Pressable>
   );
 }
@@ -84,6 +109,77 @@ const styles = StyleSheet.create({
   title: {
     ...type.title,
     color: semantic.text.primary,
+  },
+  statusChip: {
+    marginLeft: 'auto',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingVertical: 2,
+    paddingHorizontal: space.sm,
+    borderRadius: radius.pill,
+    backgroundColor: withAlpha(palette.electric, 0.16),
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: palette.electric,
+  },
+  statusText: {
+    ...type.data,
+    fontSize: 10,
+    color: palette.iris,
+  },
+  difficulty: {
+    ...type.caption,
+    marginTop: -space.sm,
+  },
+  clockRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  clock: {
+    ...type.display,
+    fontSize: 34,
+    lineHeight: 38,
+    color: semantic.text.primary,
+  },
+  clockLabel: {
+    ...type.data,
+    fontSize: 10,
+    color: semantic.text.tertiary,
+  },
+  xpBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: space.sm,
+    borderRadius: radius.pill,
+    backgroundColor: withAlpha(palette.gold, 0.14),
+  },
+  xpText: {
+    ...type.data,
+    textTransform: 'none',
+    letterSpacing: 0,
+    color: palette.gold,
+  },
+  cta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.sm,
+    minHeight: 48,
+    borderRadius: radius.pill,
+    backgroundColor: semantic.action.primary,
+  },
+  ctaLabel: {
+    ...type.bodyMedium,
+    fontSize: 14,
+    letterSpacing: 0.6,
+    color: semantic.text.onAccent,
   },
   metaRow: {
     flexDirection: 'row',

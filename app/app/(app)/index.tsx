@@ -1,5 +1,4 @@
 import { router } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import {
   ActivityIndicator,
   Pressable,
@@ -11,28 +10,21 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Avatar } from '@/components/Avatar';
-import { ExecutionScoreRing } from '@/components/ExecutionScoreRing';
+import { ProfileButton } from '@/components/ProfileButton';
+import { DailyCommandCard } from '@/components/DailyCommandCard';
 import { MainQuestCard } from '@/components/MainQuestCard';
 import { MissionRow } from '@/components/MissionRow';
 import { NamePrompt } from '@/components/NamePrompt';
 import { XpBar } from '@/components/XpBar';
 import { useActiveMissions } from '@/hooks/useActiveMissions';
-import { demoTodayStats } from '@/lib/demoData';
-import { useDemoMode } from '@/lib/demoMode';
+import { useFocusStats } from '@/hooks/useFocusSessions';
+import { useMissionHistory } from '@/hooks/useMissionHistory';
+import { useProgressStats } from '@/hooks/useProgressStats';
+import { computeDailyProgress } from '@/lib/dailyProgress';
+import { generateInsights } from '@/lib/insights';
 import { pickMainQuest } from '@/lib/missions';
 import { useAuth } from '@/state/auth';
-import { Icon, type IconName, palette, radius, semantic, space, type, withAlpha } from '@/theme';
-
-function TodayTile({ icon, value, label }: { icon: IconName; value: string; label: string }) {
-  return (
-    <View style={styles.todayTile}>
-      <Icon name={icon} size={16} color={palette.iris} />
-      <Text style={styles.todayValue}>{value}</Text>
-      <Text style={styles.todayLabel}>{label}</Text>
-    </View>
-  );
-}
+import { Icon, palette, radius, semantic, space, type, withAlpha } from '@/theme';
 
 function greeting(): string {
   const hour = new Date().getHours();
@@ -41,47 +33,13 @@ function greeting(): string {
   return 'Good Evening';
 }
 
-/** "Today's Performance" strip. Demo-only for now: the app doesn't yet aggregate real per-day
- * stats (missions done today, XP today, focus minutes — Focus Mode isn't persisted). */
-function TodayStrip({ seed }: { seed: number }) {
-  const today = demoTodayStats(seed);
-  const completion = today.missionsTotal > 0 ? today.missionsDone / today.missionsTotal : 0;
-  return (
-    <View style={styles.todayPanel}>
-      <View style={styles.todayHeading}>
-        <View style={styles.todayTitleRow}>
-          <Text style={styles.sectionEyebrow}>TODAY</Text>
-          <Icon name="sun" size={18} color={palette.gold} />
-        </View>
-        <Text style={styles.todayPercent}>{Math.round(completion * 100)}%</Text>
-      </View>
-      <View style={styles.todayProgressTrack}>
-        <LinearGradient
-          colors={[palette.electric, palette.violet]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[styles.todayProgressFill, { width: `${Math.round(completion * 100)}%` }]}
-        />
-      </View>
-      <View style={styles.todaySummary}>
-        <View>
-          <Text style={styles.todayValue}>
-            {today.missionsDone} / {today.missionsTotal}
-          </Text>
-          <Text style={styles.todayLabel}>missions complete</Text>
-        </View>
-        <TodayTile icon="xp" value={`+${today.xpToday}`} label="XP earned" />
-        <TodayTile icon="timer" value={`${today.focusMinutes}m`} label="focus time" />
-      </View>
-    </View>
-  );
-}
-
 export default function Dashboard() {
   const insets = useSafeAreaInsets();
   const { session, profile } = useAuth();
   const missionsQuery = useActiveMissions(session?.user.id);
-  const demo = useDemoMode();
+  const historyQuery = useMissionHistory(session?.user.id);
+  const focusQuery = useFocusStats(session?.user.id);
+  const statsQuery = useProgressStats(session?.user.id);
 
   // AppGate (app/_layout.tsx) never renders this route until `profile` resolves — this guard is
   // just cheap insurance against a Fast Refresh edge case, not a real steady-state path.
@@ -89,6 +47,21 @@ export default function Dashboard() {
 
   const displayName = profile.display_name ?? 'there';
   const { mainQuest, secondary } = pickMainQuest(missionsQuery.data ?? []);
+  const daily = computeDailyProgress({
+    active: missionsQuery.data ?? [],
+    history: historyQuery.data ?? [],
+  });
+  // Rule-based insight over real data (labelled as such) — shown only when there is one to show.
+  const topInsight =
+    statsQuery.data && missionsQuery.data
+      ? generateInsights({
+          streakCount: profile.streak_count,
+          consistencyPct: statsQuery.data.consistencyPct,
+          completionRatePct: statsQuery.data.completionRatePct,
+          growthTrend: statsQuery.data.growthTrend,
+          activeMissions: missionsQuery.data,
+        })[0]
+      : undefined;
 
   return (
     <ScrollView
@@ -136,23 +109,19 @@ export default function Dashboard() {
           >
             <Icon name="ai" size={20} color={palette.electric} />
           </Pressable>
-          <Pressable
-            onPress={() => router.push('/(app)/profile')}
-            accessibilityRole="button"
-            accessibilityLabel="Open your profile"
-          >
-            <Avatar uri={profile.avatar_url} name={profile.display_name} size={48} />
-          </Pressable>
+          <ProfileButton size={48} />
         </View>
       </View>
 
       {!profile.display_name && session ? <NamePrompt userId={session.user.id} /> : null}
 
-      <View style={styles.ringWrap}>
-        <ExecutionScoreRing score={profile.execution_score} />
-      </View>
-
-      {demo.enabled ? <TodayStrip seed={demo.seed} /> : null}
+      <DailyCommandCard
+        doneToday={daily.doneToday}
+        totalToday={daily.totalToday}
+        weekCompleted={daily.weekCompleted}
+        streak={profile.streak_count}
+        focusSeconds={focusQuery.data?.todaySeconds ?? null}
+      />
 
       {missionsQuery.isPending ? (
         <ActivityIndicator color={palette.electric} style={styles.loading} />
@@ -178,6 +147,7 @@ export default function Dashboard() {
           />
           {secondary.length > 0 ? (
             <View style={styles.secondaryList}>
+              <Text style={styles.sectionLabel}>UP NEXT</Text>
               {secondary.map((mission) => (
                 <MissionRow
                   key={mission.id}
@@ -190,6 +160,19 @@ export default function Dashboard() {
                   }
                 />
               ))}
+            </View>
+          ) : null}
+          {topInsight ? (
+            <View
+              style={styles.insightCard}
+              accessible
+              accessibilityLabel={`Insight: ${topInsight.message}`}
+            >
+              <View style={styles.insightHeader}>
+                <Icon name="ai" size={14} color={palette.electric} />
+                <Text style={styles.insightKicker}>INSIGHT</Text>
+              </View>
+              <Text style={styles.insightText}>{topInsight.message}</Text>
             </View>
           ) : null}
         </>
@@ -340,8 +323,32 @@ const styles = StyleSheet.create({
     ...type.caption,
     color: semantic.text.tertiary,
   },
-  ringWrap: {
+  sectionLabel: {
+    ...type.data,
+    color: semantic.text.tertiary,
+    marginTop: space.xs,
+  },
+  insightCard: {
+    gap: space.xs,
+    padding: space.lg,
+    borderRadius: radius.card,
+    backgroundColor: withAlpha(palette.electric, 0.08),
+    borderWidth: 1,
+    borderColor: withAlpha(palette.electric, 0.22),
+  },
+  insightHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: space.xs,
+  },
+  insightKicker: {
+    ...type.data,
+    fontSize: 11,
+    color: palette.electric,
+  },
+  insightText: {
+    ...type.body,
+    color: semantic.text.secondary,
   },
   loading: {
     marginTop: space.xl,

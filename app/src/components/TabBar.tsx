@@ -41,6 +41,11 @@ type TabButtonProps = Omit<PressableProps, 'style'> & {
  * second, non-color cue. The label still exists for VoiceOver via `accessibilityLabel` below; only
  * the sighted, visual label is gone.
  */
+/** Registers a route with the tab navigator without showing a tab button (Profile opens from the avatar). */
+export const HiddenTabButton = forwardRef<RNView, object>(function HiddenTabButton(_props, _ref) {
+  return null;
+});
+
 export const TabButton = forwardRef<RNView, TabButtonProps>(function TabButton(
   { isFocused, icon, label, style, onPress, ...pressableProps },
   ref,

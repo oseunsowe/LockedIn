@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ProfileButton } from '@/components/ProfileButton';
 import { useActiveMissions } from '@/hooks/useActiveMissions';
 import { useProgressStats } from '@/hooks/useProgressStats';
 import { generateInsights, type InsightTone } from '@/lib/insights';
@@ -80,7 +81,10 @@ export default function InsightsScreen() {
       }
     >
       <View style={styles.header}>
-        <Text style={styles.title}>Insights</Text>
+        <View style={styles.headerTop}>
+          <Text style={styles.title}>AI</Text>
+          <ProfileButton />
+        </View>
         <Text style={styles.subtitle}>
           Patterns from your own activity — not a live AI call, just the numbers, read plainly.
         </Text>
@@ -152,6 +156,11 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: space.xl,
     gap: space.xl,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   header: {
     gap: space.xs,
