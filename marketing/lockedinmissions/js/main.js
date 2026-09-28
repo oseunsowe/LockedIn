@@ -1,6 +1,7 @@
 import './waitlist.js';
 import './motion.js';
 import './journey.js';
+import './demo.js';
 
 // Disclosure navigation stays available without JavaScript.
 const menu = document.querySelector('.menu-toggle');

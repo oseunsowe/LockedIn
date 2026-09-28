@@ -25,6 +25,38 @@ const screens = [
 ];
 const widths = [360, 720];
 
+// iOS modal captures show a sliver of the presenting screen under the status bar, which reads as a
+// glitch once the screen sits inside a device frame. Repaint just those rows with the modal's own
+// flat background (product UI below the sliver is untouched; captures without one are unchanged).
+const SLIVER_SCREENS = new Set(['LIM-UI-003-mission-detail', 'LIM-UI-005-intentions']);
+async function cleanModalSliver(src) {
+  const { data, info } = await sharp(src).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { width: W, height: H, channels: C } = info;
+  const lum = (x, y) => {
+    const i = (y * W + x) * C;
+    return data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+  };
+  const rowAvg = (y) => {
+    let sum = 0, n = 0;
+    for (let x = Math.round(W * 0.15); x < Math.round(W * 0.85); x += 4) { sum += lum(x, y); n++; }
+    return sum / n;
+  };
+  const refY = Math.round(H * 0.118);
+  const bg = rowAvg(refY);
+  let painted = 0;
+  for (let y = Math.round(H * 0.046); y < Math.round(H * 0.105); y++) {
+    if (rowAvg(y) <= bg + 2.5) continue;
+    for (let x = 0; x < W; x++) {
+      const from = (refY * W + x) * C;
+      const to = (y * W + x) * C;
+      for (let c = 0; c < C; c++) data[to + c] = data[from + c];
+    }
+    painted++;
+  }
+  console.log('  sliver rows repainted:', painted);
+  return sharp(data, { raw: { width: W, height: H, channels: C } }).png().toBuffer();
+}
+
 await mkdir(path.join(out, 'ui'), { recursive: true });
 await mkdir(path.join(out, 'brand'), { recursive: true });
 await mkdir(path.join(site, 'assets/fonts'), { recursive: true });
@@ -34,8 +66,9 @@ for (const [name, src] of screens) {
     console.warn('missing source, skipped:', src);
     continue;
   }
+  const input = SLIVER_SCREENS.has(name) ? await cleanModalSliver(src) : src;
   for (const w of widths) {
-    const base = sharp(src).resize({ width: w });
+    const base = sharp(input).resize({ width: w });
     await base.clone().avif({ quality: 55, effort: 5 }).toFile(path.join(out, 'ui', `${name}-${w}.avif`));
     await base.clone().webp({ quality: 82 }).toFile(path.join(out, 'ui', `${name}-${w}.webp`));
   }

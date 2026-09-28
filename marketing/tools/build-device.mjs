@@ -28,6 +28,34 @@ while (stack.length) {
   if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y;
   stack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
 }
+// Enclosed non-hole components inside the opening (Dynamic Island + camera): the mockup draws them
+// semi-transparent, which shows as a ghost blob over the screenshot. Force them fully opaque.
+const enclosedSeen = new Uint8Array(W * H);
+let enclosedPixels = 0;
+for (let y = minY + 1; y < maxY; y++) {
+  for (let x = minX + 1; x < maxX; x++) {
+    if (seen[y * W + x] || enclosedSeen[y * W + x]) continue;
+    const comp = [];
+    let touchesEdge = false;
+    const q = [[x, y]];
+    while (q.length) {
+      const [cx, cy] = q.pop();
+      if (cx < minX || cx > maxX || cy < minY || cy > maxY) { touchesEdge = true; continue; }
+      const k = cy * W + cx;
+      if (seen[k] || enclosedSeen[k]) continue;
+      enclosedSeen[k] = 1;
+      comp.push(k);
+      if (cx === minX || cx === maxX || cy === minY || cy === maxY) touchesEdge = true;
+      q.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]);
+    }
+    if (!touchesEdge && comp.length < 4000) {
+      for (const k of comp) { data[k * 4 + 3] = 255; }
+      enclosedPixels += comp.length;
+    }
+  }
+}
+console.log('enclosed island pixels made opaque:', enclosedPixels);
+
 const holeW = maxX - minX + 1;
 const holeH = maxY - minY + 1;
 
@@ -55,7 +83,7 @@ console.log(JSON.stringify(geometry, null, 2));
 // Hi-res frame (the source is only 389px wide): Lanczos upscale with a light sharpen so bezel
 // edges stay crisp on retina screens. 1x = 440w, 2x = 880w.
 for (const width of [440, 880]) {
-  const base = sharp(source).resize({ width, kernel: 'lanczos3' }).sharpen({ sigma: 0.6 });
+  const base = sharp(data, { raw: { width: W, height: H, channels: 4 } }).resize({ width, kernel: 'lanczos3' }).sharpen({ sigma: 0.6 });
   await base.clone().webp({ quality: 92, alphaQuality: 100 }).toFile(path.join(outDir, `iphone-17-pro-max-${width}.webp`));
 }
 console.log('frame written to', outDir);
