@@ -1,0 +1,92 @@
+{
+  "releaseId": "landing-v2-frames-2026-09-28T06-33-21-089Z",
+  "documentRoot": "public_html",
+  "backupDirectory": ".lockedin-deployments/landing-v2-frames-2026-09-28T06-33-21-089Z/backup",
+  "files": [
+    {
+      "path": "assets/lockedin/brand/og-image.png",
+      "sha256": "37b10af595aa58051d85b0ede1c9ff9bec88495b49ff08362b929d9041cb766e",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/devices/iphone-17-pro-max-440.webp",
+      "sha256": "29d6943e4bc2f69ba988387a20b0074f51e10c509cd78b6bf0549add3be1768c",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/devices/iphone-17-pro-max-880.webp",
+      "sha256": "ac9c0d3c81521d91d010797bdcd9113c6531bbca86e6371ac038a454bb68ab5e",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-003-mission-detail-360.avif",
+      "sha256": "4c1cf1e1efa9e6901b8e16de9ff8df0960dc1579d6b31b6e71d1a5e4b51bdaf5",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-003-mission-detail-360.webp",
+      "sha256": "3d95817aea43cce41a4854148f4474603d179fa43d8d0b32ce9148557ad1fd2f",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-003-mission-detail-720.avif",
+      "sha256": "48ceb1f3c5b95094ab55d38deb42023b7b7ecf807cc2820603ccf6a211936a01",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-003-mission-detail-720.webp",
+      "sha256": "9fe24ac86fd89cf3cc47d1bf1b9581233b0f820f143de4893756fedee9ea86f1",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-005-intentions-360.avif",
+      "sha256": "fc9bd6fa5acb67a04aa1edb6d55f1c3036e6f2cd28a231a3a0ab2543fdd605e3",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-005-intentions-360.webp",
+      "sha256": "c5a16ee39150b7043ce4192a7869adfa4379f16251546b03f1f5faf9561d376a",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-005-intentions-720.avif",
+      "sha256": "afa8395344cc371b858a9f7ff1e2205ec8092a38fb6de043e579b71632031c75",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-005-intentions-720.webp",
+      "sha256": "1e861bdac1ec8333b83a39606782efff2f7c450df4994a72f493f23c8f7add13",
+      "previouslyExisted": true
+    },
+    {
+      "path": "css/landing.css",
+      "sha256": "566d6442c77f6e140f1125f8ed71216619e2775db68fab53c37bbfd8c8eea8bc",
+      "previouslyExisted": true
+    },
+    {
+      "path": "js/demo.js",
+      "sha256": "4a4b5643114c2dfa2fe1658043ec1c9b841a0c7a1fc7df192a028d27aa1dbfdb",
+      "previouslyExisted": false
+    },
+    {
+      "path": "js/main.js",
+      "sha256": "725c5ceec6c17578e27169b7145b32cd1c9dd20b60ac122138bb7628bab65dd4",
+      "previouslyExisted": true
+    },
+    {
+      "path": "confirm.html",
+      "sha256": "441ac2d54da35eb6f8cc13949140a38b702fea56c8816231b1943b15e1f163d7",
+      "previouslyExisted": true
+    },
+    {
+      "path": "reset-password.html",
+      "sha256": "cf20c4a4799bb18c5a7623056a9ed964050debb135a388497d94ff306dc5a407",
+      "previouslyExisted": true
+    },
+    {
+      "path": "unsubscribe.html",
+      "sha256": "6719c8c87f91c67837f2d8a4d812a0506fd33e2ac5a54c79296f8070bf447e64",
+      "previouslyExisted": true
+    }
+  ]
+}

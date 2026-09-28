@@ -1,0 +1,17 @@
+{
+  "releaseId": "landing-v2-frames-2026-09-28T07-31-12-214Z",
+  "documentRoot": "public_html",
+  "backupDirectory": ".lockedin-deployments/landing-v2-frames-2026-09-28T07-31-12-214Z/backup",
+  "files": [
+    {
+      "path": "css/landing.css",
+      "sha256": "567d1697282cfe9bf64c585d2eee5da6039fad39af51ca7c559cfe150a5feb68",
+      "previouslyExisted": true
+    },
+    {
+      "path": "js/demo.js",
+      "sha256": "28c1ba7ae48540574330d1d2b151c68f84744400e91403a70327f47400be2231",
+      "previouslyExisted": true
+    }
+  ]
+}

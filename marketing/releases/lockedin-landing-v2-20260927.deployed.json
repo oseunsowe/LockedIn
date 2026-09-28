@@ -1,0 +1,257 @@
+{
+  "releaseId": "landing-v2-2026-09-27T03-53-17-161Z",
+  "documentRoot": "public_html",
+  "backupDirectory": ".lockedin-deployments/landing-v2-2026-09-27T03-53-17-161Z/backup",
+  "files": [
+    {
+      "path": ".htaccess",
+      "sha256": "c25020225984c40f833a720394abd6a8fcab58e8cd64101913b3fa9dd39d3aeb",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/favicon.png",
+      "sha256": "db7035bca998cd8a16708c14dcf05026bd8132c6ab653bb549656d004fda07a1",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/fonts/inter-latin-wght-normal.woff2",
+      "sha256": "3100e775e8616cd2611beecfa23a4263d7037586789b43f035236a2e6fbd4c62",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/fonts/jetbrains-mono-latin-wght-normal.woff2",
+      "sha256": "18be452724bfdc236c074ca94a249a7f41a86752c7d04ab258ce9ed5651f6a7e",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/fonts/outfit-latin-wght-normal.woff2",
+      "sha256": "6c18d579fd87c3776be068b762cbc83fde3acb543d49eabd3ade842eb987e887",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/icon.webp",
+      "sha256": "765f29bb6c20df8ba6905f7407849fca57e0a5754a414ecaef9e7111b80bb447",
+      "previouslyExisted": true
+    },
+    {
+      "path": "assets/lockedin/brand/og-image.png",
+      "sha256": "19974e919fb6469e21cdaa849d52df9fa1bb9c5ff189da7c92ef594e90c48390",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-001-home-360.avif",
+      "sha256": "65fc35dc3da16b24a48320ec263577575eb185aa644ef58699692171d070e45a",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-001-home-360.webp",
+      "sha256": "17475a72d8fd4ca208543c5ee2890bb3b1e500c32ef550eda38c90835691265c",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-001-home-720.avif",
+      "sha256": "533985c922cb4fa4c78e00ed9932944ba976e8fc0beec410cfc96691ffde2ff7",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-001-home-720.webp",
+      "sha256": "00b86aac4267289d2ee16d825d12cda6b8bef7dd5f933e1c9cf07c692359df24",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-002-mission-board-360.avif",
+      "sha256": "4bf05d52eaeac9d7ab18d1c655a34db272ed590f96952ed35932e16f534cf7dd",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-002-mission-board-360.webp",
+      "sha256": "e8a264a7a68eab217ecd1c63e6f57e9320ed6741adee551dbb44b1adfa48790c",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-002-mission-board-720.avif",
+      "sha256": "e80022036faa1d09393004d344cc2debcd833d465cf3a7a1292cc53638ad7c85",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-002-mission-board-720.webp",
+      "sha256": "ef3665e05eefa7c3b19898bb16ae1271b27aafd2d83e126c4b042e75d1e3fe9a",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-003-mission-detail-360.avif",
+      "sha256": "2bb8df0675ff85681c8468a704380074801be94bafe4c3f8e57346b31ab5e80d",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-003-mission-detail-360.webp",
+      "sha256": "3d93db1f92fd55d984df4cdc030ea44bfe091ed89d4653e3feea74613a615e89",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-003-mission-detail-720.avif",
+      "sha256": "32c1506d62163428c0ed87b02ddcb93c91d666bf387f6f44c8848e7fc9f38069",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-003-mission-detail-720.webp",
+      "sha256": "137475d6cba6158436fa55f2f9f1ea41471fd70efd723d0197449108eda29a38",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-004-focus-360.avif",
+      "sha256": "992c0cbe549b187829e197db28f90272a80c575d74a08a704a505a97d042c012",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-004-focus-360.webp",
+      "sha256": "3ac83fe00dd37812a0ce3efe35385f03bf06db761e62746892a9313028d81354",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-004-focus-720.avif",
+      "sha256": "87edc82e0549e0731f641953ecc9ebe4d71de05e3d6161951687623310995227",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-004-focus-720.webp",
+      "sha256": "bc00d0afd9715449f98bddfe73323250e74494991511bd20659d4d207126145c",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-005-intentions-360.avif",
+      "sha256": "3175c4574d1ea7fdfa294a38f02197d00969fd116c7e22ee3740d8ac574221ba",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-005-intentions-360.webp",
+      "sha256": "84fa717dbd41ebe74cf9fca77c48887d04ef1d7022145a8321b835628945a3a7",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-005-intentions-720.avif",
+      "sha256": "4c51ad05055f4096f9450e909ff62e680db163cf5980905fc416d5276a6ae516",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-005-intentions-720.webp",
+      "sha256": "071c04b41f320cf0f26f8d9d171cb341db05138dc0b39de556c1d009c9c82a58",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-006-scan-intro-360.avif",
+      "sha256": "04cba8dd44b4d8450082a2ee3e2c142fa5694538ded58f2d1c704b4706333483",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-006-scan-intro-360.webp",
+      "sha256": "e175c50450739c2220e03e97c3dad2cc522171aebe093daa5ff5d4b308aecff0",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-006-scan-intro-720.avif",
+      "sha256": "4c27d7daf550abaea82bdff1b6d8920c730981bfd807cba2c93aa930c9aeda1d",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-006-scan-intro-720.webp",
+      "sha256": "2448057363c045c15b1338fc01cbe0791cff8f052b21c1f80c5852070f2e9d7c",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-011-verified-360.avif",
+      "sha256": "c9bb6d56fe6af5fbdc2888c7c0adc19d84934f670cc33798cec0058bf627ee65",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-011-verified-360.webp",
+      "sha256": "ff2544404e96e88f85351a7e45a9c4e2ef8ee1c685a4f3e4e97b2ea7052067cf",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-011-verified-720.avif",
+      "sha256": "d05d05e2bf3fa7cf45c06dbb5e6d4d7c7cf9494b224e0c40437ef459acbb5a5e",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-011-verified-720.webp",
+      "sha256": "fc80ddb7406281654c84aeb300804f28a84358d746da6c834d6c3a0e2d897b42",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-012-level-up-360.avif",
+      "sha256": "85b6af82c24910c56764c4097e51601087033dde8222ca8d36fe69d887ae190e",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-012-level-up-360.webp",
+      "sha256": "7b5b99832ec196cbeb3c197dbbfeb7831451a7e780db332c96c8abd259f3664d",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-012-level-up-720.avif",
+      "sha256": "73b24662b7a18d41130c3489fb75ff6f556f50f942de10cb4fac984b26ff76cd",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/ui/LIM-UI-012-level-up-720.webp",
+      "sha256": "4c8f0eaf0bb437ba23a9cef70f7e088ccd66de4acd5755bd75abc52c19e57380",
+      "previouslyExisted": false
+    },
+    {
+      "path": "css/landing.css",
+      "sha256": "61fcb1043b4efcd0363dd41705ecf170bf6c3637a60d6729160f208470ef36cc",
+      "previouslyExisted": false
+    },
+    {
+      "path": "css/tokens.css",
+      "sha256": "03dbe32d5d540ab87f4fcdd1387e606faee6d72ad7d4879a44c09decf556fccf",
+      "previouslyExisted": false
+    },
+    {
+      "path": "index.html",
+      "sha256": "0093ec4f6536204e2b108d9023fa468d3847ef9587e85f8d0ffcca9f94d92d3b",
+      "previouslyExisted": true
+    },
+    {
+      "path": "js/analytics.js",
+      "sha256": "9ad008f0445aa066990042e99d573cdedde4a25c73bcc7d40d9cc5b2f58a15f1",
+      "previouslyExisted": false
+    },
+    {
+      "path": "js/config.js",
+      "sha256": "b7f13a58e84b70cef09afb1d0f0f171c780d27b7da166e8cf9ae1781df9d399c",
+      "previouslyExisted": false
+    },
+    {
+      "path": "js/journey.js",
+      "sha256": "dbcf7bf8898b54074090bceea1b26ecc1a6a747be46eb2a4dc2977072448d64d",
+      "previouslyExisted": false
+    },
+    {
+      "path": "js/main.js",
+      "sha256": "9f21527fea5fc4c38503d56b8f8ca6e3aa4b0862cc2c0106c378d0c7f5733ecc",
+      "previouslyExisted": false
+    },
+    {
+      "path": "js/motion.js",
+      "sha256": "ae47dfec629e2e6b78a8d872898da353e5f6816764ed0dd582ca207660c7c7a6",
+      "previouslyExisted": false
+    },
+    {
+      "path": "js/waitlist.js",
+      "sha256": "96b70c508b989e5512f6a9b2e5886a7f4230fb36abcc8ebc8d6d20fb9710f652",
+      "previouslyExisted": false
+    },
+    {
+      "path": "robots.txt",
+      "sha256": "462e11df32b819900612d96456d70a5482b1ae918997d42dd022d2185e77df5a",
+      "previouslyExisted": false
+    },
+    {
+      "path": "sitemap.xml",
+      "sha256": "afb02551f3434c699eae364edf223ecc8978216bea8dd1e27d3718f31287caba",
+      "previouslyExisted": false
+    }
+  ]
+}
