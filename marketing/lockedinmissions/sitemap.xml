@@ -5,4 +5,7 @@
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+  <url><loc>https://lockedinmission.app/privacy.html</loc><priority>0.3</priority></url>
+  <url><loc>https://lockedinmission.app/terms.html</loc><priority>0.3</priority></url>
+  <url><loc>https://lockedinmission.app/delete-account.html</loc><priority>0.3</priority></url>
 </urlset>
