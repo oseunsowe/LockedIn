@@ -68,6 +68,10 @@ Deno.serve(async (req) => {
     if (removeError) console.error('Failed to remove proof media:', removeError.message);
   }
 
+  // Profile picture (public `avatars` bucket, one fixed path per user) — also personal data.
+  const { error: avatarError } = await supabase.storage.from('avatars').remove([`${userId}/avatar.jpg`]);
+  if (avatarError) console.error('Failed to remove avatar:', avatarError.message);
+
   const { error: deleteError } = await supabase.auth.admin.deleteUser(userId);
   if (deleteError) {
     console.error('Failed to delete user:', deleteError.message);

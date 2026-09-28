@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useSubscription } from '@/hooks/useSubscription';
 import { getLocalizedPrice } from '@/lib/localizedPricing';
-import { LEGAL_URL } from '@/lib/legal';
+import { PRIVACY_URL, TERMS_URL } from '@/lib/legal';
 import {
   PRICES_ARE_PLACEHOLDER,
   TRIAL_DAYS,
@@ -198,7 +198,7 @@ export default function PaywallModal() {
         </Text>
         <View style={styles.legalRow}>
           <Pressable
-            onPress={() => void Linking.openURL(`${LEGAL_URL}#privacy`)}
+            onPress={() => void Linking.openURL(PRIVACY_URL)}
             accessibilityRole="link"
             accessibilityLabel="Open Privacy Policy"
           >
@@ -206,7 +206,7 @@ export default function PaywallModal() {
           </Pressable>
           <Text style={styles.footnote}>·</Text>
           <Pressable
-            onPress={() => void Linking.openURL(`${LEGAL_URL}#terms`)}
+            onPress={() => void Linking.openURL(TERMS_URL)}
             accessibilityRole="link"
             accessibilityLabel="Open Terms of Service"
           >

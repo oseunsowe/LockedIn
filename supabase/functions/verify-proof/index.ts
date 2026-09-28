@@ -34,6 +34,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Server-side ceiling on XP per verified mission, by difficulty (1.5x the app defaults 100/250/500/1000).
+// The AI's suggestedXp and the user-editable missions.xp_reward are both untrusted inputs: without this
+// clamp a crafted mission (or a prompt-injected title) could award arbitrary XP.
+const XP_CAP_BY_DIFFICULTY: Record<string, number> = { standard: 150, challenging: 375, hard: 750, epic: 1500 };
+
 const VerdictSchema = z.object({
   verified: z.boolean(),
   confidence: z.number().min(0).max(100),
@@ -274,7 +279,8 @@ Deno.serve(async (req) => {
   await recordVerification(supabase, proof.id, verdict);
 
   if (verdict.verified) {
-    const xpAmount = verdict.suggestedXp > 0 ? verdict.suggestedXp : mission.xp_reward;
+    const requestedXp = verdict.suggestedXp > 0 ? verdict.suggestedXp : mission.xp_reward;
+    const xpAmount = Math.max(0, Math.min(requestedXp, XP_CAP_BY_DIFFICULTY[mission.difficulty] ?? 150));
     // Writes to `xp_events` (append-only ledger — 20260901000005_xp_ledger.sql's trigger keeps
     // `profiles.xp_total` in sync) and flips the mission to `completed`. A rejected/low-confidence
     // verdict deliberately does NOT flip the mission to `failed` — it stays `active` so the user

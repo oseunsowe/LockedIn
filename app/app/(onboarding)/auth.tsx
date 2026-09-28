@@ -19,6 +19,9 @@ import { radius, semantic, space, type } from '@/theme';
  * not guessed), but "compiles and calls the right functions" is not the same as "confirmed
  * working" — confirm on a real device against a real project before trusting this in production.
  */
+/** Google sign-in is only offered when a Google Cloud web client ID is configured for the build. */
+const googleEnabled = Boolean(process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID);
+
 export default function Auth() {
   const insets = useSafeAreaInsets();
   const { signInWithApple, signInWithGoogle, signInWithEmail, signUpWithEmail, session } =
@@ -129,20 +132,24 @@ export default function Auth() {
           />
         ) : null}
 
-        <Pressable
-          style={styles.googleButton}
-          onPress={handleGoogle}
-          accessibilityRole="button"
-          accessibilityLabel="Continue with Google"
-        >
-          <Text style={styles.googleButtonLabel}>Continue with Google</Text>
-        </Pressable>
+        {googleEnabled ? (
+          <Pressable
+            style={styles.googleButton}
+            onPress={handleGoogle}
+            accessibilityRole="button"
+            accessibilityLabel="Continue with Google"
+          >
+            <Text style={styles.googleButtonLabel}>Continue with Google</Text>
+          </Pressable>
+        ) : null}
 
-        <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerLabel}>OR</Text>
-          <View style={styles.dividerLine} />
-        </View>
+        {appleAvailable || googleEnabled ? (
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerLabel}>OR</Text>
+            <View style={styles.dividerLine} />
+          </View>
+        ) : null}
 
         {mode === 'signUp' ? (
           <TextInput

@@ -31,7 +31,7 @@ import {
 import { rankForLevel } from '@/lib/leveling';
 import { updateNotificationPrefs, useNotificationPrefs } from '@/lib/notificationPrefsStore';
 import { getNotificationPermission, requestNotificationPermission } from '@/lib/notifications';
-import { LEGAL_URL } from '@/lib/legal';
+import { PRIVACY_URL, TERMS_URL } from '@/lib/legal';
 import { useAuth } from '@/state/auth';
 import { fireHaptic, Icon, palette, radius, semantic, space, type, withAlpha } from '@/theme';
 
@@ -401,7 +401,7 @@ export default function ProfileScreen() {
         <View style={styles.linkList}>
           <Pressable
             style={styles.linkRow}
-            onPress={() => void Linking.openURL(`${LEGAL_URL}#privacy`)}
+            onPress={() => void Linking.openURL(PRIVACY_URL)}
             accessibilityRole="link"
             accessibilityLabel="Open Privacy Policy"
           >
@@ -410,7 +410,7 @@ export default function ProfileScreen() {
           </Pressable>
           <Pressable
             style={styles.linkRow}
-            onPress={() => void Linking.openURL(`${LEGAL_URL}#terms`)}
+            onPress={() => void Linking.openURL(TERMS_URL)}
             accessibilityRole="link"
             accessibilityLabel="Open Terms of Service"
           >

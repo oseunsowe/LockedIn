@@ -17,6 +17,7 @@ import {
   allProofTypes,
   defaultXpForDifficulty,
   difficultyMeta,
+  maxXpForDifficulty,
   proofTypeIcon,
   proofTypeLabel,
 } from '@/lib/missions';
@@ -122,7 +123,6 @@ const difficultyOrder: MissionDifficulty[] = ['standard', 'challenging', 'hard',
 
 const XP_STEP = 50;
 const XP_MIN = 50;
-const XP_MAX = 5000;
 
 /**
  * Manual mission creation (TODO.md §7.2). Template and AI-generate entry modes are shown (the
@@ -155,7 +155,8 @@ export default function CreateMissionModal() {
   // `null` = "follow the difficulty's suggested reward"; a number once the user overrides it by
   // hand, at which point switching difficulty no longer clobbers a value they chose deliberately.
   const [customXp, setCustomXp] = useState<number | null>(null);
-  const xpReward = customXp ?? defaultXpForDifficulty[difficulty];
+  const xpMax = maxXpForDifficulty[difficulty];
+  const xpReward = Math.min(customXp ?? defaultXpForDifficulty[difficulty], xpMax);
 
   const deadlineOptions = useMemo(() => buildDeadlineOptions(), []);
   const dayOptions = useMemo(() => buildDayOptions(), []);
@@ -650,7 +651,7 @@ export default function CreateMissionModal() {
             <Text style={styles.stepperValue}>+{xpReward} XP</Text>
             <Pressable
               style={styles.stepperButton}
-              onPress={() => setCustomXp(Math.min(XP_MAX, xpReward + XP_STEP))}
+              onPress={() => setCustomXp(Math.min(xpMax, xpReward + XP_STEP))}
               hitSlop={{ top: 2, bottom: 2, left: 2, right: 2 }}
               accessibilityRole="button"
               accessibilityLabel="Increase XP reward"

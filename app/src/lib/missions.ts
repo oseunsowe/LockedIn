@@ -40,18 +40,7 @@ export const difficultyMeta: Record<
   epic: { label: 'Epic', weight: 4, color: palette.gold },
 };
 
-/**
- * A starting XP suggestion for manually-created missions, scaled to difficulty — NOT the
- * profile-level XP curve (TODO.md §4.2/§9 deliberately leaves that undesigned). This is a much
- * smaller, self-contained decision: what to default a single mission's reward slider to. The user
- * can adjust it before submitting (§7.2's "reward" stepper).
- */
-export const defaultXpForDifficulty: Record<MissionDifficulty, number> = {
-  standard: 100,
-  challenging: 250,
-  hard: 500,
-  epic: 1000,
-};
+export { defaultXpForDifficulty, maxXpForDifficulty } from './xpCaps';
 
 /**
  * `missions.proof_requirements` is untyped `jsonb` (`[{"type": "photo"}, ...]`) — this is the one
