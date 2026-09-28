@@ -86,8 +86,7 @@ for (const [pkg, file] of fonts) {
   console.log('font', file);
 }
 
-// Open Graph / social card: official brand mark, tagline and a real screen.
-const brandMark = await sharp(path.join(site, 'assets/icon.png')).resize(64, 64).png().toBuffer();
+// Open Graph / social card: text wordmark, tagline and a real screen.
 const phone = await sharp(path.join(shots, 'IMG_6791.PNG'))
   .resize({ width: 250 })
   .extend({ top: 6, bottom: 6, left: 6, right: 6, background: '#2a2a3a' })
@@ -98,7 +97,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
     <radialGradient id="g" cx="78%" cy="45%" r="60%"><stop offset="0" stop-color="#3a2a8a" stop-opacity=".55"/><stop offset="1" stop-color="#050508" stop-opacity="0"/></radialGradient>
   </defs>
   <rect width="1200" height="630" fill="#050508"/><rect width="1200" height="630" fill="url(#g)"/>
-
+  <text x="72" y="92" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="44" letter-spacing="-1" fill="#fff">Locked<tspan fill="#6365f1">In</tspan></text>
   <text x="72" y="150" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="20" letter-spacing="3" fill="#a78bfa">TURN INTENTIONS INTO REAL PROGRESS</text>
   <text x="72" y="270" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="88" fill="#fff">YOU SAID</text>
   <text x="72" y="360" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="88" fill="#fff">YOU'D DO IT.</text>
@@ -106,7 +105,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
   <text x="72" y="560" font-family="Arial, Helvetica, sans-serif" font-size="26" fill="#9898a4">Commit. Do the work. Prove it. Progress.</text>
 </svg>`;
 await sharp(Buffer.from(svg))
-  .composite([{ input: phone, left: 860, top: 25 }, { input: brandMark, left: 72, top: 32 }])
+  .composite([{ input: phone, left: 860, top: 25 }])
   .png()
   .toFile(path.join(out, 'brand/og-image.png'));
 console.log('og-image');

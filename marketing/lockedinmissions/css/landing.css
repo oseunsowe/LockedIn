@@ -844,7 +844,7 @@ a {
 :root { --fs-hero: clamp(3.25rem, 6.7vw, 6.5rem); --fs-h2: clamp(2rem, 3.4vw, 3.5rem); --fs-lead: clamp(1rem, 1.25vw, 1.125rem); }
 .container { max-width: 1440px; }
 .wordmark { display: inline-flex; align-items: center; flex-shrink: 0; }
-.wordmark img { width: 44px; height: 44px; border-radius: 11px; }
+.wordmark { font-size: clamp(1.5rem, 1.2vw + 1.1rem, 1.75rem); line-height: 1; letter-spacing: -0.035em; }
 .site-nav a { display: inline-flex; align-items: center; min-height: 44px; font-size: .8rem; }
 .site-nav ul { gap: 25px; }
 .menu-toggle { display: none; border: 1px solid var(--lim-border-strong); background: var(--lim-surface-01); color: var(--lim-white); border-radius: 24px; min-height: 44px; padding: 0 16px; font: inherit; cursor: pointer; }
@@ -1207,4 +1207,95 @@ a {
   .js .phone.is-live .phone-screen {
     animation: screen-wake 800ms var(--ease-out) 150ms both;
   }
+}
+
+
+/* ---------- Menu: icon button + responsive dropdown ---------- */
+.menu-toggle {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: border-color var(--dur-state) var(--ease-out), background-color var(--dur-state) var(--ease-out);
+}
+.menu-toggle:hover,
+.menu-toggle[aria-expanded='true'] {
+  border-color: var(--lim-iris);
+  background: var(--lim-surface-02);
+}
+.menu-icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 14px;
+  margin: -7px 0 0 -9px;
+}
+.menu-icon i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform var(--dur-screen) var(--ease-out), opacity var(--dur-micro) linear;
+}
+.menu-icon i:nth-child(1) { top: 0; }
+.menu-icon i:nth-child(2) { top: 6px; }
+.menu-icon i:nth-child(3) { top: 12px; }
+.menu-toggle[aria-expanded='true'] .menu-icon i:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.menu-toggle[aria-expanded='true'] .menu-icon i:nth-child(2) { opacity: 0; }
+.menu-toggle[aria-expanded='true'] .menu-icon i:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 1100px) {
+  /* Logo left; CTA and menu icon grouped at the right (icon last, the standard position). */
+  .header-inner { justify-content: flex-start; }
+  .header-cta { order: 2; margin-left: auto; }
+  .menu-toggle:not([hidden]) { order: 3; margin-left: 0; }
+  .site-nav {
+    order: 4;
+    max-height: calc(100svh - 72px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-shadow: 0 24px 40px rgba(0, 0, 0, 0.45);
+  }
+  .js .site-nav.is-open { animation: menu-in 240ms var(--ease-out) both; }
+}
+
+/* Phones: a stacked list with full-width, thumb-sized rows and a chevron, like an accordion. */
+@media (max-width: 640px) {
+  .site-nav { padding: 4px var(--gutter) 10px; }
+  .site-nav ul { flex-direction: column; flex-wrap: nowrap; gap: 0; }
+  .site-nav li { border-bottom: 1px solid var(--lim-border); }
+  .site-nav li:last-child { border-bottom: 0; }
+  .site-nav a { width: 100%; min-height: 54px; justify-content: space-between; font-size: 1rem; color: var(--lim-text); }
+  .site-nav a::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-top: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+    transform: rotate(45deg);
+    opacity: 0.45;
+  }
+}
+
+/* Header fit on very small phones: never wrap the CTA or squeeze the menu icon. */
+.header-cta { white-space: nowrap; flex-shrink: 0; }
+.menu-toggle { flex-shrink: 0; }
+.cta-short { display: none; }
+@media (max-width: 380px) {
+  /* Visually hidden, not display:none: the link keeps its full accessible name. */
+  .cta-full { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+  .cta-short { display: inline; }
+  .header-cta { padding: 0 14px; font-size: 0.8125rem; }
+  .header-inner { gap: 10px; }
 }
