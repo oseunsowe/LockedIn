@@ -1,0 +1,22 @@
+{
+  "releaseId": "landing-v2-frames-2026-09-28T05-55-05-602Z",
+  "documentRoot": "public_html",
+  "backupDirectory": ".lockedin-deployments/landing-v2-frames-2026-09-28T05-55-05-602Z/backup",
+  "files": [
+    {
+      "path": "assets/lockedin/devices/iphone-17-pro-max-440.webp",
+      "sha256": "ae5311352ae680227fb91eb1199f1e7f1bac973d21ab1c2acb9346c414be3cf6",
+      "previouslyExisted": false
+    },
+    {
+      "path": "assets/lockedin/devices/iphone-17-pro-max-880.webp",
+      "sha256": "a140ae8e9e48900d9c66ac15cc3ae7685e36af9a0c7d611765b526f7c085f16a",
+      "previouslyExisted": false
+    },
+    {
+      "path": "css/landing.css",
+      "sha256": "6bccbc01e5116515d2039822db171644120b5a39eb8c31fa611e4fbc6fd98905",
+      "previouslyExisted": true
+    }
+  ]
+}
